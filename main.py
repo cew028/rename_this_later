@@ -8,17 +8,24 @@ FPS = 30
 WINWIDTH = 640
 WINHEIGHT = 480
 
+BLACK = (000, 000, 000)
 WHITE = (255, 255, 255)
 
-def build_sprites(image_file):
-	SPRITES = spritesheet.spritesheet(image_file)
-	PLAYERSPRITE = {
-		"left":  SPRITES.image_at(( 0,  0, 16, 16), colorkey = 0),
-		"up":    SPRITES.image_at((16,  0, 16, 16), colorkey = 0),
-		"right": SPRITES.image_at((32,  0, 16, 16), colorkey = 0),
-		"down":  SPRITES.image_at((48,  0, 16, 16), colorkey = 0),
+BLOCKS = [
+	(160, 160),
+	(176, 176),
+	(160, 176),
+]
+
+def get_sprites_from_spritesheet(image_file):
+	SPRITES = {
+		"player_left":  spritesheet.spritesheet(image_file).image_at(( 0,  0, 16, 16), colorkey = 0),
+		"player_up":    spritesheet.spritesheet(image_file).image_at((16,  0, 16, 16), colorkey = 0),
+		"player_right": spritesheet.spritesheet(image_file).image_at((32,  0, 16, 16), colorkey = 0),
+		"player_down":  spritesheet.spritesheet(image_file).image_at((48,  0, 16, 16), colorkey = 0),
+		"block":        spritesheet.spritesheet(image_file).image_at((64,  0, 16, 16), colorkey = 0),
 	}
-	return PLAYERSPRITE
+	return SPRITES
 
 def main():
 	global FPSCLOCK, DISPLAYSURF
@@ -31,6 +38,12 @@ def main():
 	while True:
 		runGame()
 
+def place_free(targetx, targety):
+	for block in BLOCKS:
+		if block == (targetx, targety):
+			return False
+	return True
+
 def runGame():
 	camerax          = 0 # x-coordinate of the center of the camera
 	cameray          = 0 # y-coordinate of the center of the camera
@@ -39,13 +52,16 @@ def runGame():
 	targetx          = playerx # x-coordinate of the destination
 	targety          = playery # y-coordinate of the destination
 	moving           = False
-	move_delay       = 5 # Number of frames to wait before moving. If you tap, you don't move; you have to hold the button.
+	move_delay       = 4 # Number of frames to wait before moving. If you tap, you don't move; you have to hold to move.
 	move_delay_count = 0
-	player_direction = "left"
+	player_sprite    = "player_left"
+
 	while True:
 		# current_time = FPSCLOCK.get_time()
 		DISPLAYSURF.fill(WHITE)
-		DISPLAYSURF.blit(build_sprites("arrow.png")[player_direction], (playerx,playery))
+		DISPLAYSURF.blit(get_sprites_from_spritesheet("spritesheet.png")[player_sprite], (playerx,playery))
+		for block in BLOCKS:
+			DISPLAYSURF.blit(get_sprites_from_spritesheet("spritesheet.png")["block"], block)
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
@@ -57,27 +73,27 @@ def runGame():
 		keys = pygame.key.get_pressed()
 
 		if keys[K_UP] and not moving:
-			player_direction = "up"
+			player_sprite = "player_up"
 			move_delay_count += 1
-			if move_delay_count >= move_delay:
+			if move_delay_count >= move_delay and place_free(playerx, playery - 16):
 				moving = True
 				targety -= 16
 		if keys[K_DOWN] and not moving:
-			player_direction = "down"
+			player_sprite = "player_down"
 			move_delay_count += 1
-			if move_delay_count >= move_delay:
+			if move_delay_count >= move_delay and place_free(playerx, playery + 16):
 				moving = True
 				targety += 16
 		if keys[K_LEFT] and not moving:
-			player_direction = "left"
+			player_sprite = "player_left"
 			move_delay_count += 1
-			if move_delay_count >= move_delay:
+			if move_delay_count >= move_delay and place_free(playerx - 16, playery):
 				moving = True
 				targetx -= 16
 		if keys[K_RIGHT] and not moving:
-			player_direction = "right"
+			player_sprite = "player_right"
 			move_delay_count += 1
-			if move_delay_count >= move_delay:
+			if move_delay_count >= move_delay and place_free(playerx + 16, playery):
 				moving = True
 				targetx += 16
 
