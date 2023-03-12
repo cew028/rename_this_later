@@ -1,0 +1,5 @@
+set checker
+f/resize 10 10
+set grid
+set grid/spacing 1
+set grid/color #ffffff
