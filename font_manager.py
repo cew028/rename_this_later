@@ -24,7 +24,7 @@ def get_font_from(image_file):
 	# The characters are the set from code page 437: https://en.wikipedia.org/wiki/Code_page_437
 	# Unfortunately, this is also being hardcoded.
 	# Please send help.
-	CHARACTERS[""] = CHARACTERS.pop(0) # The NUL character.
+	CHARACTERS[""] = CHARACTERS.pop(0) # The NUL character. Represented here with an empty string.
 	CHARACTERS["☺"] = CHARACTERS.pop(1)
 	CHARACTERS["☻"] = CHARACTERS.pop(2)
 	CHARACTERS["♥"] = CHARACTERS.pop(3)
@@ -116,7 +116,7 @@ def get_font_from(image_file):
 	CHARACTERS["Y"] = CHARACTERS.pop(89)
 	CHARACTERS["Z"] = CHARACTERS.pop(90)
 	CHARACTERS["["] = CHARACTERS.pop(91)
-	CHARACTERS["\\"] = CHARACTERS.pop(92)
+	CHARACTERS["\\"] = CHARACTERS.pop(92) # Escaped to properly display backslash \
 	CHARACTERS["]"] = CHARACTERS.pop(93)
 	CHARACTERS["^"] = CHARACTERS.pop(94)
 	CHARACTERS["_"] = CHARACTERS.pop(95)
@@ -282,6 +282,8 @@ def get_font_from(image_file):
 	CHARACTERS["□"] = CHARACTERS.pop(255) # According to code page 437, this is supposed to be a non-breaking space.
 										  # I've replaced it with "□" to match the image file.
 	return CHARACTERS
+
+
 
 def write_message(DISPLAYSURF, CHARACTERS, message, x, y):
 	"""Input a character dictionary, a message, and a coordinate (x,y).

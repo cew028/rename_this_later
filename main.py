@@ -19,6 +19,17 @@ BLOCKS = [
 	(160, 170),
 ]
 
+def buffer_text(message, frames_between_letters, text_counter, message_done):
+	length = len(message)
+	if text_counter <= frames_between_letters * length and not message_done:
+		buffer_message = message[0:text_counter//frames_between_letters]
+		text_counter += 1
+	else:
+		message_done = True
+		text_counter = 0
+		buffer_message = message
+	return buffer_message, text_counter, message_done
+
 def get_sprite_from(image_file):
 	SPRITES = {
 		"player_left":  spritesheet.spritesheet(image_file).image_at(( 0,  0, 10, 10), colorkey = 0),
@@ -59,13 +70,19 @@ def runGame():
 	move_delay_count = 0
 	player_sprite    = "player_left"
 
+	text_counter = 0
+	frames_between_letters = 2
+	message_done = False
+
 	while True:
 		# current_time = FPSCLOCK.get_time()
 		DISPLAYSURF.fill(WHITE)
 		DISPLAYSURF.blit(get_sprite_from("spritesheet.png")[player_sprite], (playerx,playery))
 		for block in BLOCKS:
 			DISPLAYSURF.blit(get_sprite_from("spritesheet.png")["block"], block)
-		font_manager.write_message(DISPLAYSURF, BASICFONT, "Test. TEST. 01234. \\□\\\\", 160, 320)
+		message = "Test. TEST. ☺ 01234. \\□\\\\"
+		buffer_message, text_counter, message_done = buffer_text(message, frames_between_letters, text_counter, message_done)
+		font_manager.write_message(DISPLAYSURF, BASICFONT, buffer_message, x=160, y=320)
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
