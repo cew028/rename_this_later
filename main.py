@@ -6,8 +6,8 @@ import font_manager
 import spritesheet
 
 FPS = 30
-WINWIDTH = 640
-WINHEIGHT = 480
+WINWIDTH, WINHEIGHT = 640, 480
+HALFWINWIDTH, HALFWINHEIGHT = WINWIDTH/2, WINHEIGHT/2
 GRIDSIZE = 10
 
 BLACK = (000, 000, 000)
@@ -29,6 +29,9 @@ def buffer_text(message, frames_between_letters, text_counter, message_done):
 		text_counter = 0
 		buffer_message = message
 	return buffer_message, text_counter, message_done
+
+def camera_controller(DISPLAYSURF, object, objectx, objecty, camerax, cameray):
+	DISPLAYSURF.blit(object, (objectx-camerax+HALFWINWIDTH, objecty-cameray+HALFWINHEIGHT))
 
 def get_sprite_from(image_file):
 	SPRITES = {
@@ -59,27 +62,27 @@ def place_free(targetx, targety):
 	return True
 
 def runGame():
-	camerax          = 0 # x-coordinate of the center of the camera
-	cameray          = 0 # y-coordinate of the center of the camera
-	playerx          = WINWIDTH/2 # x-coordinate of the player
-	playery          = WINHEIGHT/2 # y-coordinate of the player
-	targetx          = playerx # x-coordinate of the destination
-	targety          = playery # y-coordinate of the destination
+	playerx          = 0 # x-coordinate of the player
+	playery          = 0 # y-coordinate of the player
+	targetx          = playerx # x-coordinate of the destination when you start walking
+	targety          = playery # y-coordinate of the destination when you start walking
 	moving           = False
 	move_delay       = 4 # Number of frames to wait before moving. If you tap, you don't move; you have to hold to move.
 	move_delay_count = 0
 	player_sprite    = "player_left"
 
 	text_counter = 0
-	frames_between_letters = 2
+	frames_between_letters = 1
 	message_done = False
 
 	while True:
 		# current_time = FPSCLOCK.get_time()
+		camerax = playerx # x-coordinate of the center of the camera
+		cameray = playery # y-coordinate of the center of the camera
 		DISPLAYSURF.fill(WHITE)
-		DISPLAYSURF.blit(get_sprite_from("spritesheet.png")[player_sprite], (playerx,playery))
+		camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")[player_sprite], playerx, playery, camerax, cameray)
 		for block in BLOCKS:
-			DISPLAYSURF.blit(get_sprite_from("spritesheet.png")["block"], block)
+			camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")["block"], block[0], block[1],camerax, cameray)
 		message = "Test. TEST. ☺ 01234. \\□\\\\"
 		buffer_message, text_counter, message_done = buffer_text(message, frames_between_letters, text_counter, message_done)
 		font_manager.write_message(DISPLAYSURF, BASICFONT, buffer_message, x=160, y=320)
