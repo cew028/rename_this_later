@@ -6,17 +6,25 @@ import font_manager
 import spritesheet
 
 FPS = 30
-WINWIDTH, WINHEIGHT = 640, 480
-HALFWINWIDTH, HALFWINHEIGHT = WINWIDTH/2, WINHEIGHT/2
 GRIDSIZE = 10
+WINWIDTH, WINHEIGHT = 48 * GRIDSIZE, 24 * GRIDSIZE
+HALFWINWIDTH, HALFWINHEIGHT = WINWIDTH/2, WINHEIGHT/2
 
 BLACK = (000, 000, 000)
 WHITE = (255, 255, 255)
+RED   = (255, 000, 000)
 
 BLOCKS = [
-	(160, 160),
-	(170, 170),
-	(160, 170),
+	(10, 10),
+	(20, 20),
+	(10, 20),
+	(10, 30),
+	(10, 40),
+	(10, 50),
+	(10, 60),
+	(10, 70),
+	(10, 80),
+	(10, 90),
 ]
 
 def buffer_text(message, frames_between_letters, text_counter, message_done):
@@ -33,6 +41,23 @@ def buffer_text(message, frames_between_letters, text_counter, message_done):
 def camera_controller(DISPLAYSURF, object, objectx, objecty, camerax, cameray):
 	DISPLAYSURF.blit(object, (objectx-camerax+HALFWINWIDTH, objecty-cameray+HALFWINHEIGHT))
 
+def draw_dialog_box(DISPLAYSURF, BASICFONT, topleftx, toplefty, width, height):
+	# Draw the background of the box.
+	pygame.draw.rect(DISPLAYSURF, WHITE, (topleftx, toplefty, width, height+GRIDSIZE))
+	# Draw the four corners of the frame.
+	font_manager.write_message(DISPLAYSURF, BASICFONT, "╔", x=topleftx,                y=toplefty)
+	font_manager.write_message(DISPLAYSURF, BASICFONT, "╗", x=topleftx+width-GRIDSIZE, y=toplefty)
+	font_manager.write_message(DISPLAYSURF, BASICFONT, "╚", x=topleftx,                y=toplefty+height)
+	font_manager.write_message(DISPLAYSURF, BASICFONT, "╝", x=topleftx+width-GRIDSIZE, y=toplefty+height)
+	# Draw the top and bottom of the frame.
+	for gridx in range(width//GRIDSIZE-2):
+		font_manager.write_message(DISPLAYSURF, BASICFONT, "═", x=topleftx+(gridx+1)*GRIDSIZE, y=toplefty)
+		font_manager.write_message(DISPLAYSURF, BASICFONT, "═", x=topleftx+(gridx+1)*GRIDSIZE, y=toplefty+height)
+	# Draw the sides of the frame.
+	for gridy in range(height//GRIDSIZE-1):
+		font_manager.write_message(DISPLAYSURF, BASICFONT, "║", x=topleftx,                y=toplefty+(gridy+1)*GRIDSIZE)
+		font_manager.write_message(DISPLAYSURF, BASICFONT, "║", x=topleftx+width-GRIDSIZE, y=toplefty+(gridy+1)*GRIDSIZE)
+
 def get_sprite_from(image_file):
 	SPRITES = {
 		"player_left":  spritesheet.spritesheet(image_file).image_at(( 0,  0, 10, 10), colorkey = 0),
@@ -48,7 +73,7 @@ def main():
 	pygame.init()
 	FPSCLOCK = pygame.time.Clock()
 	# pygame.display.set_icon(pygame.image.load(".png")) TODO
-	DISPLAYSURF = pygame.display.set_mode((WINWIDTH, WINHEIGHT))
+	DISPLAYSURF = pygame.display.set_mode((WINWIDTH, WINHEIGHT), SCALED)
 	pygame.display.set_caption("Title")
 	BASICFONT = font_manager.get_font_from("font.png") # This is a dictionary whose keys are characters
 													   # and whose values are sprites of those characters.
@@ -72,7 +97,7 @@ def runGame():
 	player_sprite    = "player_left"
 
 	text_counter = 0
-	frames_between_letters = 1
+	frames_between_letters = 1 # Make this value larger to cause text to write more slowly.
 	message_done = False
 
 	while True:
@@ -83,9 +108,10 @@ def runGame():
 		camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")[player_sprite], playerx, playery, camerax, cameray)
 		for block in BLOCKS:
 			camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")["block"], block[0], block[1],camerax, cameray)
-		message = "Test. TEST. ☺ 01234. \\□\\\\"
+		draw_dialog_box(DISPLAYSURF, BASICFONT, 0, WINHEIGHT - 6*GRIDSIZE, WINWIDTH, 5*GRIDSIZE)
+		message = "Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert kljsl"
 		buffer_message, text_counter, message_done = buffer_text(message, frames_between_letters, text_counter, message_done)
-		font_manager.write_message(DISPLAYSURF, BASICFONT, buffer_message, x=160, y=320)
+		font_manager.write_message(DISPLAYSURF, BASICFONT, buffer_message, x=10, y=WINHEIGHT-5*GRIDSIZE)
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:

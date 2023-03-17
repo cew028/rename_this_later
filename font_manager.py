@@ -15,7 +15,7 @@ def get_font_from(image_file):
 	CHARACTERS = {}
 	for row in range(ROWS):
 			for column in range(COLUMNS):
-				CHARACTERS[column+ROWS*row] = spritesheet.spritesheet(image_file).image_at((column*CHARACTER_WIDTH, row*CHARACTER_HEIGHT, CHARACTER_WIDTH, CHARACTER_HEIGHT), colorkey = 1)
+				CHARACTERS[column+ROWS*row] = spritesheet.spritesheet(image_file).image_at((column*CHARACTER_WIDTH, row*CHARACTER_HEIGHT, CHARACTER_WIDTH, CHARACTER_HEIGHT), colorkey = -1)
 				# The above makes the keys "column + ROWS*row" 
 				# which just counts which cell we're on in the double loop.
 				# It then assigns the value to be the sprite of the character
