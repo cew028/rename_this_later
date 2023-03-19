@@ -1,286 +1,106 @@
 import pygame
 
+import global_constants as g
 import spritesheet
 
-# The image file is 160x160 pixels and contains 
-# 16 characters per row, and 16 columns. The 
-# following numbers are thus hardcoded.
-# Yes, this is not ideal.
+# The image file for the font is 160x160 pixels and contains 
+# 16 characters per row, and 16 columns.
 IMAGE_WIDTH, IMAGE_HEIGHT = 160, 160
 COLUMNS, ROWS = 16, 16
 CHARACTER_WIDTH, CHARACTER_HEIGHT = int(IMAGE_WIDTH / COLUMNS), int(IMAGE_HEIGHT / ROWS)
-NUMBER_OF_CHARACTERS = COLUMNS * ROWS
+# These are the characters from code page 437: https://en.wikipedia.org/wiki/Code_page_437
+CHARACTER_LIST = [ 
+	 "", "☺", "☻", "♥", "♦", "♣", "♠", "•", "◘", "○", "◙", "♂", "♀", "♪", "♫", "☼", # Using "" for the NUL character.
+	"►", "◄", "↕", "‼", "¶", "§", "▬", "↨", "↑", "↓", "→", "←", "∟", "↔", "▲", "▼",
+	" ", "!", '"', "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/",
+	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?",
+	"@", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",
+	"P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "[", "\\", "]", "^", "_", # Need to escape \
+	"`", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
+	"p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "{", "|", "}", "~", "⌂",
+	"Ç", "ü", "é", "â", "ä", "à", "å", "ç", "ê", "ë", "è", "ï", "î", "ì", "Ä", "Å",
+	"É", "æ", "Æ", "ô", "ö", "ò", "û", "ù", "ÿ", "Ö", "Ü", "¢", "£", "¥", "₧", "ƒ",
+	"á", "í", "ó", "ú", "ñ", "Ñ", "ª", "º", "¿", "⌐", "¬", "½", "¼", "¡", "«", "»",
+	"░", "▒", "▓", "│", "┤", "╡", "╢", "╖", "╕", "╣", "║", "╗", "╝", "╜", "╛", "┐",
+	"└", "┴", "┬", "├", "─", "┼", "╞", "╟", "╚", "╔", "╩", "╦", "╠", "═", "╬", "╧",
+	"╨", "╤", "╥", "╙", "╘", "╒", "╓", "╫", "╪", "┘", "┌", "█", "▄", "▌", "▐", "▀",
+	"α", "ß", "Γ", "π", "Σ", "σ", "µ", "τ", "Φ", "Θ", "Ω", "δ", "∞", "φ", "ε", "∩",
+	"≡", "±", "≥", "≤", "⌠", "⌡", "÷", "≈", "°", "∙", "·", "√", "ⁿ", "²", "■", "□",  # □ is supposed to be a non-
+																					 # breaking space in code 437, 
+																					 # but this matches the image file.
+]
+
+def break_message_to_fit_textbox(message, width):
+	"""Input a message and the width (in pixels) of the dialog box.
+	Outputs a list of text lines that will fit in that width."""
+	list_of_lines = []
+	list_of_words = message.split()
+	for i, word in enumerate(list_of_words):
+		list_of_words[i] = word + " "
+	current_line = ""
+	while list_of_words != []:
+		if len(current_line) + len(list_of_words[0]) < width/g.GRIDSIZE - 2:
+			current_line += list_of_words[0]
+			del list_of_words[0]
+		else:
+			list_of_lines.append(current_line)
+			current_line = ""
+	list_of_lines.append(current_line)
+	return list_of_lines
+
+def buffer_text(message, frames_between_letters, text_counter, message_done, width):
+	if text_counter <= frames_between_letters * len(message) and not message_done:
+		buffer_message = message[0:text_counter//frames_between_letters]
+		text_counter += 1
+	else:
+		message_done = True
+		text_counter = 0
+		buffer_message = message
+	return buffer_message, text_counter, message_done
+
+def draw_dialog_box(DISPLAYSURF, BASICFONT, \
+	topleftx, toplefty, \
+	width, height, \
+	message, frames_between_letters, text_counter, message_done):
+
+	# Draw the background of the box.
+	pygame.draw.rect(DISPLAYSURF, g.WHITE, (topleftx, toplefty, width, height+g.GRIDSIZE))
+
+	# Draw the four corners of the frame.
+	write_message(DISPLAYSURF, BASICFONT, "╔", x=topleftx,                  y=toplefty)
+	write_message(DISPLAYSURF, BASICFONT, "╗", x=topleftx+width-g.GRIDSIZE, y=toplefty)
+	write_message(DISPLAYSURF, BASICFONT, "╚", x=topleftx,                  y=toplefty+height)
+	write_message(DISPLAYSURF, BASICFONT, "╝", x=topleftx+width-g.GRIDSIZE, y=toplefty+height)
+
+	# Draw the top and bottom of the frame.
+	for gridx in range(width//g.GRIDSIZE-2):
+		write_message(DISPLAYSURF, BASICFONT, "═", x=topleftx+(gridx+1)*g.GRIDSIZE, y=toplefty)
+		write_message(DISPLAYSURF, BASICFONT, "═", x=topleftx+(gridx+1)*g.GRIDSIZE, y=toplefty+height)
+
+	# Draw the sides of the frame.
+	for gridy in range(height//g.GRIDSIZE-1):
+		write_message(DISPLAYSURF, BASICFONT, "║", x=topleftx,                  y=toplefty+(gridy+1)*g.GRIDSIZE)
+		write_message(DISPLAYSURF, BASICFONT, "║", x=topleftx+width-g.GRIDSIZE, y=toplefty+(gridy+1)*g.GRIDSIZE)
+
+	# Draw the text.
+	line_counter = 1
+	list_of_lines = break_message_to_fit_textbox(message, width)
+	buffer_message, text_counter, message_done = buffer_text(list_of_lines[line_counter-1], frames_between_letters, text_counter, message_done, width)
+	write_message(DISPLAYSURF, BASICFONT, buffer_message, x=topleftx+g.GRIDSIZE, y=toplefty+g.GRIDSIZE*line_counter)
+	if message_done:
+		line_counter += 1
+		message_done = False
+	return text_counter, message_done
 
 def get_font_from(image_file):
 	CHARACTERS = {}
-	for row in range(ROWS):
-			for column in range(COLUMNS):
-				CHARACTERS[column+ROWS*row] = spritesheet.spritesheet(image_file).image_at((column*CHARACTER_WIDTH, row*CHARACTER_HEIGHT, CHARACTER_WIDTH, CHARACTER_HEIGHT), colorkey = -1)
-				# The above makes the keys "column + ROWS*row" 
-				# which just counts which cell we're on in the double loop.
-				# It then assigns the value to be the sprite of the character
-				# at that point in the double loop.
-	# Next, we want to change the keys from the integers to the actual characters themselves.
-	# The characters are the set from code page 437: https://en.wikipedia.org/wiki/Code_page_437
-	# Unfortunately, this is also being hardcoded.
-	# Please send help.
-	CHARACTERS[""] = CHARACTERS.pop(0) # The NUL character. Represented here with an empty string.
-	CHARACTERS["☺"] = CHARACTERS.pop(1)
-	CHARACTERS["☻"] = CHARACTERS.pop(2)
-	CHARACTERS["♥"] = CHARACTERS.pop(3)
-	CHARACTERS["♦"] = CHARACTERS.pop(4)
-	CHARACTERS["♣"] = CHARACTERS.pop(5)
-	CHARACTERS["♠"] = CHARACTERS.pop(6)
-	CHARACTERS["•"] = CHARACTERS.pop(7)
-	CHARACTERS["◘"] = CHARACTERS.pop(8)
-	CHARACTERS["○"] = CHARACTERS.pop(9)
-	CHARACTERS["◙"] = CHARACTERS.pop(10)
-	CHARACTERS["♂"] = CHARACTERS.pop(11)
-	CHARACTERS["♀"] = CHARACTERS.pop(12)
-	CHARACTERS["♪"] = CHARACTERS.pop(13)
-	CHARACTERS["♫"] = CHARACTERS.pop(14)
-	CHARACTERS["☼"] = CHARACTERS.pop(15)
-	CHARACTERS["►"] = CHARACTERS.pop(16)
-	CHARACTERS["◄"] = CHARACTERS.pop(17)
-	CHARACTERS["↕"] = CHARACTERS.pop(18)
-	CHARACTERS["‼"] = CHARACTERS.pop(19)
-	CHARACTERS["¶"] = CHARACTERS.pop(20)
-	CHARACTERS["§"] = CHARACTERS.pop(21)
-	CHARACTERS["▬"] = CHARACTERS.pop(22)
-	CHARACTERS["↨"] = CHARACTERS.pop(23)
-	CHARACTERS["↑"] = CHARACTERS.pop(24)
-	CHARACTERS["↓"] = CHARACTERS.pop(25)
-	CHARACTERS["→"] = CHARACTERS.pop(26)
-	CHARACTERS["←"] = CHARACTERS.pop(27)
-	CHARACTERS["∟"] = CHARACTERS.pop(28)
-	CHARACTERS["↔"] = CHARACTERS.pop(29)
-	CHARACTERS["▲"] = CHARACTERS.pop(30)
-	CHARACTERS["▼"] = CHARACTERS.pop(31)
-	CHARACTERS[" "] = CHARACTERS.pop(32)
-	CHARACTERS["!"] = CHARACTERS.pop(33)
-	CHARACTERS['"'] = CHARACTERS.pop(34)
-	CHARACTERS["#"] = CHARACTERS.pop(35)
-	CHARACTERS["$"] = CHARACTERS.pop(36)
-	CHARACTERS["%"] = CHARACTERS.pop(37)
-	CHARACTERS["&"] = CHARACTERS.pop(38)
-	CHARACTERS["'"] = CHARACTERS.pop(39)
-	CHARACTERS["("] = CHARACTERS.pop(40)
-	CHARACTERS[")"] = CHARACTERS.pop(41)
-	CHARACTERS["*"] = CHARACTERS.pop(42)
-	CHARACTERS["+"] = CHARACTERS.pop(43)
-	CHARACTERS[","] = CHARACTERS.pop(44)
-	CHARACTERS["-"] = CHARACTERS.pop(45)
-	CHARACTERS["."] = CHARACTERS.pop(46)
-	CHARACTERS["/"] = CHARACTERS.pop(47)
-	CHARACTERS["0"] = CHARACTERS.pop(48)
-	CHARACTERS["1"] = CHARACTERS.pop(49)
-	CHARACTERS["2"] = CHARACTERS.pop(50)
-	CHARACTERS["3"] = CHARACTERS.pop(51)
-	CHARACTERS["4"] = CHARACTERS.pop(52)
-	CHARACTERS["5"] = CHARACTERS.pop(53)
-	CHARACTERS["6"] = CHARACTERS.pop(54)
-	CHARACTERS["7"] = CHARACTERS.pop(55)
-	CHARACTERS["8"] = CHARACTERS.pop(56)
-	CHARACTERS["9"] = CHARACTERS.pop(57)
-	CHARACTERS[":"] = CHARACTERS.pop(58)
-	CHARACTERS[";"] = CHARACTERS.pop(59)
-	CHARACTERS["<"] = CHARACTERS.pop(60)
-	CHARACTERS["="] = CHARACTERS.pop(61)
-	CHARACTERS[">"] = CHARACTERS.pop(62)
-	CHARACTERS["?"] = CHARACTERS.pop(63)
-	CHARACTERS["@"] = CHARACTERS.pop(64)
-	CHARACTERS["A"] = CHARACTERS.pop(65)
-	CHARACTERS["B"] = CHARACTERS.pop(66)
-	CHARACTERS["C"] = CHARACTERS.pop(67)
-	CHARACTERS["D"] = CHARACTERS.pop(68)
-	CHARACTERS["E"] = CHARACTERS.pop(69)
-	CHARACTERS["F"] = CHARACTERS.pop(70)
-	CHARACTERS["G"] = CHARACTERS.pop(71)
-	CHARACTERS["H"] = CHARACTERS.pop(72)
-	CHARACTERS["I"] = CHARACTERS.pop(73)
-	CHARACTERS["J"] = CHARACTERS.pop(74)
-	CHARACTERS["K"] = CHARACTERS.pop(75)
-	CHARACTERS["L"] = CHARACTERS.pop(76)
-	CHARACTERS["M"] = CHARACTERS.pop(77)
-	CHARACTERS["N"] = CHARACTERS.pop(78)
-	CHARACTERS["O"] = CHARACTERS.pop(79)
-	CHARACTERS["P"] = CHARACTERS.pop(80)
-	CHARACTERS["Q"] = CHARACTERS.pop(81)
-	CHARACTERS["R"] = CHARACTERS.pop(82)
-	CHARACTERS["S"] = CHARACTERS.pop(83)
-	CHARACTERS["T"] = CHARACTERS.pop(84)
-	CHARACTERS["U"] = CHARACTERS.pop(85)
-	CHARACTERS["V"] = CHARACTERS.pop(86)
-	CHARACTERS["W"] = CHARACTERS.pop(87)
-	CHARACTERS["X"] = CHARACTERS.pop(88)
-	CHARACTERS["Y"] = CHARACTERS.pop(89)
-	CHARACTERS["Z"] = CHARACTERS.pop(90)
-	CHARACTERS["["] = CHARACTERS.pop(91)
-	CHARACTERS["\\"] = CHARACTERS.pop(92) # Escaped to properly display backslash \
-	CHARACTERS["]"] = CHARACTERS.pop(93)
-	CHARACTERS["^"] = CHARACTERS.pop(94)
-	CHARACTERS["_"] = CHARACTERS.pop(95)
-	CHARACTERS["`"] = CHARACTERS.pop(96)
-	CHARACTERS["a"] = CHARACTERS.pop(97)
-	CHARACTERS["b"] = CHARACTERS.pop(98)
-	CHARACTERS["c"] = CHARACTERS.pop(99)
-	CHARACTERS["d"] = CHARACTERS.pop(100)
-	CHARACTERS["e"] = CHARACTERS.pop(101)
-	CHARACTERS["f"] = CHARACTERS.pop(102)
-	CHARACTERS["g"] = CHARACTERS.pop(103)
-	CHARACTERS["h"] = CHARACTERS.pop(104)
-	CHARACTERS["i"] = CHARACTERS.pop(105)
-	CHARACTERS["j"] = CHARACTERS.pop(106)
-	CHARACTERS["k"] = CHARACTERS.pop(107)
-	CHARACTERS["l"] = CHARACTERS.pop(108)
-	CHARACTERS["m"] = CHARACTERS.pop(109)
-	CHARACTERS["n"] = CHARACTERS.pop(110)
-	CHARACTERS["o"] = CHARACTERS.pop(111)
-	CHARACTERS["p"] = CHARACTERS.pop(112)
-	CHARACTERS["q"] = CHARACTERS.pop(113)
-	CHARACTERS["r"] = CHARACTERS.pop(114)
-	CHARACTERS["s"] = CHARACTERS.pop(115)
-	CHARACTERS["t"] = CHARACTERS.pop(116)
-	CHARACTERS["u"] = CHARACTERS.pop(117)
-	CHARACTERS["v"] = CHARACTERS.pop(118)
-	CHARACTERS["w"] = CHARACTERS.pop(119)
-	CHARACTERS["x"] = CHARACTERS.pop(120)
-	CHARACTERS["y"] = CHARACTERS.pop(121)
-	CHARACTERS["z"] = CHARACTERS.pop(122)
-	CHARACTERS["{"] = CHARACTERS.pop(123)
-	CHARACTERS["|"] = CHARACTERS.pop(124)
-	CHARACTERS["}"] = CHARACTERS.pop(125)
-	CHARACTERS["~"] = CHARACTERS.pop(126)
-	CHARACTERS["⌂"] = CHARACTERS.pop(127)
-	CHARACTERS["Ç"] = CHARACTERS.pop(128)
-	CHARACTERS["ü"] = CHARACTERS.pop(129)
-	CHARACTERS["é"] = CHARACTERS.pop(130)
-	CHARACTERS["â"] = CHARACTERS.pop(131)
-	CHARACTERS["ä"] = CHARACTERS.pop(132)
-	CHARACTERS["à"] = CHARACTERS.pop(133)
-	CHARACTERS["å"] = CHARACTERS.pop(134)
-	CHARACTERS["ç"] = CHARACTERS.pop(135)
-	CHARACTERS["ê"] = CHARACTERS.pop(136)
-	CHARACTERS["ë"] = CHARACTERS.pop(137)
-	CHARACTERS["è"] = CHARACTERS.pop(138)
-	CHARACTERS["ï"] = CHARACTERS.pop(139)
-	CHARACTERS["î"] = CHARACTERS.pop(140)
-	CHARACTERS["ì"] = CHARACTERS.pop(141)
-	CHARACTERS["Ä"] = CHARACTERS.pop(142)
-	CHARACTERS["Å"] = CHARACTERS.pop(143)
-	CHARACTERS["É"] = CHARACTERS.pop(144)
-	CHARACTERS["æ"] = CHARACTERS.pop(145)
-	CHARACTERS["Æ"] = CHARACTERS.pop(146)
-	CHARACTERS["ô"] = CHARACTERS.pop(147)
-	CHARACTERS["ö"] = CHARACTERS.pop(148)
-	CHARACTERS["ò"] = CHARACTERS.pop(149)
-	CHARACTERS["û"] = CHARACTERS.pop(150)
-	CHARACTERS["ù"] = CHARACTERS.pop(151)
-	CHARACTERS["ÿ"] = CHARACTERS.pop(152)
-	CHARACTERS["Ö"] = CHARACTERS.pop(153)
-	CHARACTERS["Ü"] = CHARACTERS.pop(154)
-	CHARACTERS["¢"] = CHARACTERS.pop(155)
-	CHARACTERS["£"] = CHARACTERS.pop(156)
-	CHARACTERS["¥"] = CHARACTERS.pop(157)
-	CHARACTERS["₧"] = CHARACTERS.pop(158)
-	CHARACTERS["ƒ"] = CHARACTERS.pop(159)
-	CHARACTERS["á"] = CHARACTERS.pop(160)
-	CHARACTERS["í"] = CHARACTERS.pop(161)
-	CHARACTERS["ó"] = CHARACTERS.pop(162)
-	CHARACTERS["ú"] = CHARACTERS.pop(163)
-	CHARACTERS["ñ"] = CHARACTERS.pop(164)
-	CHARACTERS["Ñ"] = CHARACTERS.pop(165)
-	CHARACTERS["ª"] = CHARACTERS.pop(166)
-	CHARACTERS["º"] = CHARACTERS.pop(167)
-	CHARACTERS["¿"] = CHARACTERS.pop(168)
-	CHARACTERS["⌐"] = CHARACTERS.pop(169)
-	CHARACTERS["¬"] = CHARACTERS.pop(170)
-	CHARACTERS["½"] = CHARACTERS.pop(171)
-	CHARACTERS["¼"] = CHARACTERS.pop(172)
-	CHARACTERS["¡"] = CHARACTERS.pop(173)
-	CHARACTERS["«"] = CHARACTERS.pop(174)
-	CHARACTERS["»"] = CHARACTERS.pop(175)
-	CHARACTERS["░"] = CHARACTERS.pop(176)
-	CHARACTERS["▒"] = CHARACTERS.pop(177)
-	CHARACTERS["▓"] = CHARACTERS.pop(178)
-	CHARACTERS["│"] = CHARACTERS.pop(179)
-	CHARACTERS["┤"] = CHARACTERS.pop(180)
-	CHARACTERS["╡"] = CHARACTERS.pop(181)
-	CHARACTERS["╢"] = CHARACTERS.pop(182)
-	CHARACTERS["╖"] = CHARACTERS.pop(183)
-	CHARACTERS["╕"] = CHARACTERS.pop(184)
-	CHARACTERS["╣"] = CHARACTERS.pop(185)
-	CHARACTERS["║"] = CHARACTERS.pop(186)
-	CHARACTERS["╗"] = CHARACTERS.pop(187)
-	CHARACTERS["╝"] = CHARACTERS.pop(188)
-	CHARACTERS["╜"] = CHARACTERS.pop(189)
-	CHARACTERS["╛"] = CHARACTERS.pop(190)
-	CHARACTERS["┐"] = CHARACTERS.pop(191)
-	CHARACTERS["└"] = CHARACTERS.pop(192)
-	CHARACTERS["┴"] = CHARACTERS.pop(193)
-	CHARACTERS["┬"] = CHARACTERS.pop(194)
-	CHARACTERS["├"] = CHARACTERS.pop(195)
-	CHARACTERS["─"] = CHARACTERS.pop(196)
-	CHARACTERS["┼"] = CHARACTERS.pop(197)
-	CHARACTERS["╞"] = CHARACTERS.pop(198)
-	CHARACTERS["╟"] = CHARACTERS.pop(199)
-	CHARACTERS["╚"] = CHARACTERS.pop(200)
-	CHARACTERS["╔"] = CHARACTERS.pop(201)
-	CHARACTERS["╩"] = CHARACTERS.pop(202)
-	CHARACTERS["╦"] = CHARACTERS.pop(203)
-	CHARACTERS["╠"] = CHARACTERS.pop(204)
-	CHARACTERS["═"] = CHARACTERS.pop(205)
-	CHARACTERS["╬"] = CHARACTERS.pop(206)
-	CHARACTERS["╧"] = CHARACTERS.pop(207)
-	CHARACTERS["╨"] = CHARACTERS.pop(208)
-	CHARACTERS["╤"] = CHARACTERS.pop(209)
-	CHARACTERS["╥"] = CHARACTERS.pop(210)
-	CHARACTERS["╙"] = CHARACTERS.pop(211)
-	CHARACTERS["╘"] = CHARACTERS.pop(212)
-	CHARACTERS["╒"] = CHARACTERS.pop(213)
-	CHARACTERS["╓"] = CHARACTERS.pop(214)
-	CHARACTERS["╫"] = CHARACTERS.pop(215)
-	CHARACTERS["╪"] = CHARACTERS.pop(216)
-	CHARACTERS["┘"] = CHARACTERS.pop(217)
-	CHARACTERS["┌"] = CHARACTERS.pop(218)
-	CHARACTERS["█"] = CHARACTERS.pop(219)
-	CHARACTERS["▄"] = CHARACTERS.pop(220)
-	CHARACTERS["▌"] = CHARACTERS.pop(221)
-	CHARACTERS["▐"] = CHARACTERS.pop(222)
-	CHARACTERS["▀"] = CHARACTERS.pop(223)
-	CHARACTERS["α"] = CHARACTERS.pop(224)
-	CHARACTERS["ß"] = CHARACTERS.pop(225)
-	CHARACTERS["Γ"] = CHARACTERS.pop(226)
-	CHARACTERS["π"] = CHARACTERS.pop(227)
-	CHARACTERS["Σ"] = CHARACTERS.pop(228)
-	CHARACTERS["σ"] = CHARACTERS.pop(229)
-	CHARACTERS["µ"] = CHARACTERS.pop(230)
-	CHARACTERS["τ"] = CHARACTERS.pop(231)
-	CHARACTERS["Φ"] = CHARACTERS.pop(232)
-	CHARACTERS["Θ"] = CHARACTERS.pop(233)
-	CHARACTERS["Ω"] = CHARACTERS.pop(234)
-	CHARACTERS["δ"] = CHARACTERS.pop(235)
-	CHARACTERS["∞"] = CHARACTERS.pop(236)
-	CHARACTERS["φ"] = CHARACTERS.pop(237)
-	CHARACTERS["ε"] = CHARACTERS.pop(238)
-	CHARACTERS["∩"] = CHARACTERS.pop(239)
-	CHARACTERS["≡"] = CHARACTERS.pop(240)
-	CHARACTERS["±"] = CHARACTERS.pop(241)
-	CHARACTERS["≥"] = CHARACTERS.pop(242)
-	CHARACTERS["≤"] = CHARACTERS.pop(243)
-	CHARACTERS["⌠"] = CHARACTERS.pop(244)
-	CHARACTERS["⌡"] = CHARACTERS.pop(245)
-	CHARACTERS["÷"] = CHARACTERS.pop(246)
-	CHARACTERS["≈"] = CHARACTERS.pop(247)
-	CHARACTERS["°"] = CHARACTERS.pop(248)
-	CHARACTERS["∙"] = CHARACTERS.pop(249)
-	CHARACTERS["·"] = CHARACTERS.pop(250)
-	CHARACTERS["√"] = CHARACTERS.pop(251)
-	CHARACTERS["ⁿ"] = CHARACTERS.pop(252)
-	CHARACTERS["²"] = CHARACTERS.pop(253)
-	CHARACTERS["■"] = CHARACTERS.pop(254)
-	CHARACTERS["□"] = CHARACTERS.pop(255) # According to code page 437, this is supposed to be a non-breaking space.
-										  # I've replaced it with "□" to match the image file.
+	for i, char in enumerate(CHARACTER_LIST):
+		column = i % COLUMNS
+		row = i // COLUMNS
+		CHARACTERS[char] = spritesheet.spritesheet(image_file).image_at(
+			(column*CHARACTER_WIDTH, row*CHARACTER_HEIGHT, CHARACTER_WIDTH, CHARACTER_HEIGHT),
+			colorkey = -1
+		)
 	return CHARACTERS
 
 

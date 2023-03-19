@@ -3,16 +3,8 @@ import sys
 from pygame.locals import *
 
 import font_manager
+import global_constants as g
 import spritesheet
-
-FPS = 30
-GRIDSIZE = 10
-WINWIDTH, WINHEIGHT = 48 * GRIDSIZE, 24 * GRIDSIZE
-HALFWINWIDTH, HALFWINHEIGHT = WINWIDTH/2, WINHEIGHT/2
-
-BLACK = (000, 000, 000)
-WHITE = (255, 255, 255)
-RED   = (255, 000, 000)
 
 BLOCKS = [
 	(10, 10),
@@ -27,45 +19,10 @@ BLOCKS = [
 	(10, 90),
 ]
 
-def buffer_text(message, frames_between_letters, text_counter, message_done):
-	length = len(message)
-	if text_counter <= frames_between_letters * length and not message_done:
-		buffer_message = message[0:text_counter//frames_between_letters]
-		text_counter += 1
-	else:
-		message_done = True
-		text_counter = 0
-		buffer_message = message
-	return buffer_message, text_counter, message_done
+
 
 def camera_controller(DISPLAYSURF, object, objectx, objecty, camerax, cameray):
-	DISPLAYSURF.blit(object, (objectx-camerax+HALFWINWIDTH, objecty-cameray+HALFWINHEIGHT))
-
-def draw_dialog_box(DISPLAYSURF, BASICFONT, \
-	topleftx, toplefty, \
-	width, height, \
-	message, frames_between_letters, text_counter, message_done):
-	# Draw the background of the box.
-	pygame.draw.rect(DISPLAYSURF, WHITE, (topleftx, toplefty, width, height+GRIDSIZE))
-	# Draw the four corners of the frame.
-	font_manager.write_message(DISPLAYSURF, BASICFONT, "╔", x=topleftx,                y=toplefty)
-	font_manager.write_message(DISPLAYSURF, BASICFONT, "╗", x=topleftx+width-GRIDSIZE, y=toplefty)
-	font_manager.write_message(DISPLAYSURF, BASICFONT, "╚", x=topleftx,                y=toplefty+height)
-	font_manager.write_message(DISPLAYSURF, BASICFONT, "╝", x=topleftx+width-GRIDSIZE, y=toplefty+height)
-	# Draw the top and bottom of the frame.
-	for gridx in range(width//GRIDSIZE-2):
-		font_manager.write_message(DISPLAYSURF, BASICFONT, "═", x=topleftx+(gridx+1)*GRIDSIZE, y=toplefty)
-		font_manager.write_message(DISPLAYSURF, BASICFONT, "═", x=topleftx+(gridx+1)*GRIDSIZE, y=toplefty+height)
-	# Draw the sides of the frame.
-	for gridy in range(height//GRIDSIZE-1):
-		font_manager.write_message(DISPLAYSURF, BASICFONT, "║", x=topleftx,                y=toplefty+(gridy+1)*GRIDSIZE)
-		font_manager.write_message(DISPLAYSURF, BASICFONT, "║", x=topleftx+width-GRIDSIZE, y=toplefty+(gridy+1)*GRIDSIZE)
-	# Draw the text.
-	buffer_message, text_counter, message_done = buffer_text(message, frames_between_letters, text_counter, message_done)
-	font_manager.write_message(DISPLAYSURF, BASICFONT, buffer_message, x=topleftx+GRIDSIZE, y=toplefty+GRIDSIZE)
-	return buffer_message, text_counter, message_done
-
-
+	DISPLAYSURF.blit(object, (objectx-camerax+g.HALFWINWIDTH, objecty-cameray+g.HALFWINHEIGHT))
 
 def get_sprite_from(image_file):
 	SPRITES = {
@@ -82,7 +39,7 @@ def main():
 	pygame.init()
 	FPSCLOCK = pygame.time.Clock()
 	# pygame.display.set_icon(pygame.image.load(".png")) TODO
-	DISPLAYSURF = pygame.display.set_mode((WINWIDTH, WINHEIGHT), SCALED)
+	DISPLAYSURF = pygame.display.set_mode((g.WINWIDTH, g.WINHEIGHT), SCALED)
 	pygame.display.set_caption("Title")
 	BASICFONT = font_manager.get_font_from("font.png") # This is a dictionary whose keys are characters
 													   # and whose values are sprites of those characters.
@@ -114,15 +71,15 @@ def runGame():
 		# current_time = FPSCLOCK.get_time()
 		camerax = playerx # x-coordinate of the center of the camera
 		cameray = playery # y-coordinate of the center of the camera
-		DISPLAYSURF.fill(WHITE)
+		DISPLAYSURF.fill(g.WHITE)
 		camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")[player_sprite], playerx, playery, camerax, cameray)
 		for block in BLOCKS:
 			camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")["block"], block[0], block[1],camerax, cameray)
 
 		if message is not None:
-			buffer_message, text_counter, message_done = draw_dialog_box(DISPLAYSURF, BASICFONT, \
-																	 0, WINHEIGHT - 6*GRIDSIZE, \
-																	 WINWIDTH, 5*GRIDSIZE, \
+			text_counter, message_done = font_manager.draw_dialog_box(DISPLAYSURF, BASICFONT, \
+																	 0, g.WINHEIGHT - 6*g.GRIDSIZE, \
+																	 g.WINWIDTH, 5*g.GRIDSIZE, \
 																	 message, frames_between_letters, \
 																	 text_counter, message_done)
 
@@ -138,30 +95,30 @@ def runGame():
 		if keys[K_UP] and not moving:
 			player_sprite = "player_up"
 			move_delay_count += 1
-			if move_delay_count >= move_delay and place_free(playerx, playery - GRIDSIZE):
+			if move_delay_count >= move_delay and place_free(playerx, playery - g.GRIDSIZE):
 				moving = True
-				targety -= GRIDSIZE
+				targety -= g.GRIDSIZE
 		if keys[K_DOWN] and not moving:
 			player_sprite = "player_down"
 			move_delay_count += 1
-			if move_delay_count >= move_delay and place_free(playerx, playery + GRIDSIZE):
+			if move_delay_count >= move_delay and place_free(playerx, playery + g.GRIDSIZE):
 				moving = True
-				targety += GRIDSIZE
+				targety += g.GRIDSIZE
 		if keys[K_LEFT] and not moving:
 			player_sprite = "player_left"
 			move_delay_count += 1
-			if move_delay_count >= move_delay and place_free(playerx - GRIDSIZE, playery):
+			if move_delay_count >= move_delay and place_free(playerx - g.GRIDSIZE, playery):
 				moving = True
-				targetx -= GRIDSIZE
+				targetx -= g.GRIDSIZE
 		if keys[K_RIGHT] and not moving:
 			player_sprite = "player_right"
 			move_delay_count += 1
-			if move_delay_count >= move_delay and place_free(playerx + GRIDSIZE, playery):
+			if move_delay_count >= move_delay and place_free(playerx + g.GRIDSIZE, playery):
 				moving = True
-				targetx += GRIDSIZE
+				targetx += g.GRIDSIZE
 		# Testing
 		if keys[K_z]:
-			message = "Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert kljsl"
+			message = "□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert kljsl* fat ajshdflkjasdkfjaslkdjf dfhasd test test 12345"
 		if not keys[K_z]:
 			message = None
 			text_counter = 0
@@ -185,7 +142,7 @@ def runGame():
 
 
 		pygame.display.update()
-		FPSCLOCK.tick(FPS)
+		FPSCLOCK.tick(g.FPS)
 
 def terminate():
 	pygame.quit()
