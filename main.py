@@ -41,7 +41,10 @@ def buffer_text(message, frames_between_letters, text_counter, message_done):
 def camera_controller(DISPLAYSURF, object, objectx, objecty, camerax, cameray):
 	DISPLAYSURF.blit(object, (objectx-camerax+HALFWINWIDTH, objecty-cameray+HALFWINHEIGHT))
 
-def draw_dialog_box(DISPLAYSURF, BASICFONT, topleftx, toplefty, width, height):
+def draw_dialog_box(DISPLAYSURF, BASICFONT, \
+	topleftx, toplefty, \
+	width, height, \
+	message, frames_between_letters, text_counter, message_done):
 	# Draw the background of the box.
 	pygame.draw.rect(DISPLAYSURF, WHITE, (topleftx, toplefty, width, height+GRIDSIZE))
 	# Draw the four corners of the frame.
@@ -57,6 +60,12 @@ def draw_dialog_box(DISPLAYSURF, BASICFONT, topleftx, toplefty, width, height):
 	for gridy in range(height//GRIDSIZE-1):
 		font_manager.write_message(DISPLAYSURF, BASICFONT, "║", x=topleftx,                y=toplefty+(gridy+1)*GRIDSIZE)
 		font_manager.write_message(DISPLAYSURF, BASICFONT, "║", x=topleftx+width-GRIDSIZE, y=toplefty+(gridy+1)*GRIDSIZE)
+	# Draw the text.
+	buffer_message, text_counter, message_done = buffer_text(message, frames_between_letters, text_counter, message_done)
+	font_manager.write_message(DISPLAYSURF, BASICFONT, buffer_message, x=topleftx+GRIDSIZE, y=toplefty+GRIDSIZE)
+	return buffer_message, text_counter, message_done
+
+
 
 def get_sprite_from(image_file):
 	SPRITES = {
@@ -99,6 +108,7 @@ def runGame():
 	text_counter = 0
 	frames_between_letters = 1 # Make this value larger to cause text to write more slowly.
 	message_done = False
+	message = None
 
 	while True:
 		# current_time = FPSCLOCK.get_time()
@@ -108,10 +118,13 @@ def runGame():
 		camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")[player_sprite], playerx, playery, camerax, cameray)
 		for block in BLOCKS:
 			camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")["block"], block[0], block[1],camerax, cameray)
-		draw_dialog_box(DISPLAYSURF, BASICFONT, 0, WINHEIGHT - 6*GRIDSIZE, WINWIDTH, 5*GRIDSIZE)
-		message = "Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert kljsl"
-		buffer_message, text_counter, message_done = buffer_text(message, frames_between_letters, text_counter, message_done)
-		font_manager.write_message(DISPLAYSURF, BASICFONT, buffer_message, x=10, y=WINHEIGHT-5*GRIDSIZE)
+
+		if message is not None:
+			buffer_message, text_counter, message_done = draw_dialog_box(DISPLAYSURF, BASICFONT, \
+																	 0, WINHEIGHT - 6*GRIDSIZE, \
+																	 WINWIDTH, 5*GRIDSIZE, \
+																	 message, frames_between_letters, \
+																	 text_counter, message_done)
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
@@ -146,6 +159,14 @@ def runGame():
 			if move_delay_count >= move_delay and place_free(playerx + GRIDSIZE, playery):
 				moving = True
 				targetx += GRIDSIZE
+		# Testing
+		if keys[K_z]:
+			message = "Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert kljsl"
+		if not keys[K_z]:
+			message = None
+			text_counter = 0
+			message_done = False
+
 
 		if targetx > playerx: # Target to the right
 			playerx += 2 
