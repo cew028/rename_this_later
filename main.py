@@ -87,9 +87,6 @@ def runGame():
 			)
 		if dialog_box.message is not None:
 			dialog_box.draw_dialog_box()
-			print(f"is_too_short = {dialog_box.is_too_short}")
-			print(f"ready_for_input = {dialog_box.ready_for_input}")
-			print(f"continue_inputted = {dialog_box.continue_inputted}")
 		else:
 			dialog_box.turn_off()
 
@@ -128,15 +125,20 @@ def runGame():
 				targetx += g.GRIDSIZE
 		# Testing
 		if keys[K_z]:
-			dialog_box.message = "□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert \
+			dialog_box.message = "1Test 2Test 3Test 4Test 5Test 6Test 7Test "*4
+
+			"□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert \
 			kljsl* fat ajshdflkjasdkfjaslkdjf dfhasds \
 			test test 12345 TEST TEST THE QUICK BROWN FOX \
 			JUMPED OVER THE LAZY DOG is this too long to \
-			fit? Hooray now it works just fine. I am the best." # The break at "to" is the place where it leaves the dialog box.
+			fit? Hooray now it works just fine. I am the \
+			best. It even wraps across more than two \
+			pages -- see watch this fjskaljdfj \
+			jskafjklfjskl adjlk fjkljlkasdf jsadf test" # The break at "to" is the place where it leaves the dialog box.
 		if keys[K_x] and dialog_box.ready_for_input:
 			dialog_box.continue_inputted = True
 		if keys[K_BACKSPACE]:
-			dialog_box.message = None
+			dialog_box.turn_off()
 
 
 		if targetx > playerx: # Target to the right

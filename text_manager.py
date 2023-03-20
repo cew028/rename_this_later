@@ -208,6 +208,10 @@ class DialogBox:
 			for _ in range(self.height//g.GRIDSIZE-1):
 				if self.list_of_lines != []:
 					del self.list_of_lines[0]
+					if self.list_of_lines == []:
+						self.message = None
+				else:
+					self.message = None
 			self.line_counter = 0
 			self.message_done = False
 			self.ready_for_input = False
