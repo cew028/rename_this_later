@@ -108,9 +108,9 @@ class Player:
 		for block in wm.BLOCKS:
 			if block == (x, y):
 				return "block"
-		for thing in wm.THINGS_TO_TALK_TO:
-			if thing == (x, y):
-				return "thing"
+		for thing, coord in wm.THINGS_TO_TALK_TO.items():
+			if coord == (x, y):
+				return thing
 		return None
 
 	def run(self):
@@ -121,18 +121,11 @@ class Player:
 	def start_conversation(self, dialog_box):
 		keys = pygame.key.get_pressed()
 
-		if self.adjacent_obstruction() == "thing":
-			dialog_box.message = "□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert \
-				kljsl* fas ajshdflkjasdkfjaslkdjf dfhasds \
-				test test 12345 TEST TEST THE QUICK BROWN FOX \
-				JUMPED OVER THE LAZY DOG is this too long to \
-				fit? Hooray now it works just fine. I am the \
-				best. It even wraps across more than two \
-				pages -- see watch this fjskaljdfj \
-				jskafjklfjskl adjlk fjkljlkasdf jsadf test \
-				ajksfdhjh fsd afhsadh f saf sdf asd fsdf sadf \
-				blah blah bhlahas lsdfjasi \
-				ajshdflkjasdkfjaslkdjf"
+		match self.adjacent_obstruction():
+			case "guy1":
+				dialog_box.message = "This is guy1."
+			case "guy2":
+				dialog_box.message = "This is guy2."
 		if keys[K_z] and dialog_box.ready_for_input:
 		 	dialog_box.continue_inputted = True
 		if keys[K_BACKSPACE]:

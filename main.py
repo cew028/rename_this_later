@@ -54,11 +54,11 @@ def run_game():
 				block[0], block[1],\
 				camerax, cameray
 			)
-		for thing in wm.THINGS_TO_TALK_TO:
+		for coord in wm.THINGS_TO_TALK_TO.values():
 			camera_controller(
 				DISPLAYSURF, \
 				get_sprite_from("spritesheet.png")["test_thing"], \
-				thing[0], thing[1], \
+				coord[0], coord[1], \
 				camerax, cameray
 			)
 		camera_controller( # Draw the player last so it's always on top.
