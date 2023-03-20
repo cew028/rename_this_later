@@ -72,6 +72,8 @@ def runGame():
 			camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")["block"], block[0], block[1],camerax, cameray)
 		if dialog_box.message is not None:
 			dialog_box.draw_dialog_box()
+		else:
+			dialog_box.turn_off()
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
@@ -111,8 +113,6 @@ def runGame():
 			dialog_box.message = "□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert kljsl* fat ajshdflkjasdkfjaslkdjf dfhasd test test 12345"
 		if not keys[K_z]:
 			dialog_box.message = None
-			dialog_box.text_counter = 0
-			dialog_box.message_done = False
 
 
 		if targetx > playerx: # Target to the right

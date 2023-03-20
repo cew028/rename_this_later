@@ -39,6 +39,7 @@ class DialogBox:
 		self.text_counter 			= 0
 		self.frames_between_letters = 1 # Make this value larger to cause text to write more slowly.
 		self.message_done 			= False
+		self.line_done              = False
 		self.message 				= None
 		self.CHARACTERS 			= self.get_font_from("font.png")
 		self.DISPLAYSURF 			= DISPLAYSURF
@@ -47,11 +48,12 @@ class DialogBox:
 		self.width 					= g.WINWIDTH
 		self.height 				= 5*g.GRIDSIZE
 		self.list_of_lines          = []
-		self.buffer_message         = ""
+		self.line_counter           = 0
 
-	def break_message_to_fit_textbox(self):
-		"""Input a message and the width (in pixels) of the dialog box.
-		Outputs a list of text lines that will fit in that width."""
+	def break_message_to_fit_box(self):
+		"""Takes self.message, splits it into substrings, and
+		places those substrings in self.list_of_lines, where
+		the substrings are short enough to fit in the dialog box."""
 		list_of_words = self.message.split()
 		for i, word in enumerate(list_of_words):
 			list_of_words[i] = word + " "
@@ -66,14 +68,14 @@ class DialogBox:
 		self.list_of_lines.append(current_line)
 
 	def buffer_text(self, line):
-		if self.text_counter <= self.frames_between_letters * len(line) and not self.message_done:
-			self.buffer_message = line[0:self.text_counter//self.frames_between_letters]
+		if self.text_counter <= self.frames_between_letters * len(line) and not self.line_done and not self.message_done:
+			buffer_message = line[0:self.text_counter//self.frames_between_letters]
 			self.text_counter += 1
 		else:
-			self.message_done = True
+			self.line_done = True
 			self.text_counter = 0
-			self.buffer_message = line
-		return line
+			buffer_message = line
+		return buffer_message
 
 	def draw_dialog_box(self):
 		# Draw the background of the box.
@@ -95,14 +97,24 @@ class DialogBox:
 			self.write_message(input_message="║", x=self.topleftx,                       y=self.toplefty+(gridy+1)*g.GRIDSIZE)
 			self.write_message(input_message="║", x=self.topleftx+self.width-g.GRIDSIZE, y=self.toplefty+(gridy+1)*g.GRIDSIZE)
 
-		# Draw the text.
-		line_counter = 1
-		self.break_message_to_fit_textbox()
-		line = self.buffer_text(self.list_of_lines[0])
-		self.write_message(line, x=self.topleftx+g.GRIDSIZE, y=self.toplefty+g.GRIDSIZE*line_counter)
-		if self.message_done:
-			line_counter += 1
-			self.message_done = False
+		# Draw the text. First we generate the list_of_lines.
+		if self.list_of_lines == []:
+			self.break_message_to_fit_box() 
+
+		# Next we typewriter out the lines in list_of_lines, one at a time.
+		if self.line_counter < len(self.list_of_lines):
+			buff = self.buffer_text(self.list_of_lines[self.line_counter])
+			self.write_message(buff, x=self.topleftx+g.GRIDSIZE, y=self.toplefty+g.GRIDSIZE*(self.line_counter+1))
+			if self.line_done and not self.message_done:
+				self.line_counter += 1
+				self.line_done = False
+		else:
+			self.message_done = True
+
+		# This code writes the lines that we've already typewritered, so that they don't disappear.
+		for line in range(self.line_counter):
+			self.write_message(self.list_of_lines[line], x=self.topleftx+g.GRIDSIZE, y=self.toplefty+g.GRIDSIZE*(line+1))
+
 
 	def get_font_from(self, image_file):
 		CHARACTERS = {}
@@ -114,6 +126,13 @@ class DialogBox:
 				colorkey = -1
 			)
 		return CHARACTERS
+
+	def turn_off(self):
+		self.text_counter  = 0
+		self.message_done  = False
+		self.line_done     = False
+		self.list_of_lines = []
+		self.line_counter  = 0
 
 	def write_message(self, input_message, x, y):
 		"""Input a character dictionary, a message, and a coordinate (x,y).
