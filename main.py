@@ -2,9 +2,9 @@ import pygame
 import sys
 from pygame.locals import *
 
-import font_manager
 import global_constants as g
 import spritesheet
+import text_manager
 
 BLOCKS = [
 	(10, 10),
@@ -41,8 +41,7 @@ def main():
 	# pygame.display.set_icon(pygame.image.load(".png")) TODO
 	DISPLAYSURF = pygame.display.set_mode((g.WINWIDTH, g.WINHEIGHT), SCALED)
 	pygame.display.set_caption("Title")
-	BASICFONT = font_manager.get_font_from("font.png") # This is a dictionary whose keys are characters
-													   # and whose values are sprites of those characters.
+
 	while True:
 		runGame()
 
@@ -61,11 +60,7 @@ def runGame():
 	move_delay       = 4 # Number of frames to wait before moving. If you tap, you don't move; you have to hold to move.
 	move_delay_count = 0
 	player_sprite    = "player_left"
-
-	text_counter = 0
-	frames_between_letters = 1 # Make this value larger to cause text to write more slowly.
-	message_done = False
-	message = None
+	dialog_box       = text_manager.DialogBox(DISPLAYSURF = DISPLAYSURF,)
 
 	while True:
 		# current_time = FPSCLOCK.get_time()
@@ -75,13 +70,8 @@ def runGame():
 		camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")[player_sprite], playerx, playery, camerax, cameray)
 		for block in BLOCKS:
 			camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")["block"], block[0], block[1],camerax, cameray)
-
-		if message is not None:
-			text_counter, message_done = font_manager.draw_dialog_box(DISPLAYSURF, BASICFONT, \
-																	 0, g.WINHEIGHT - 6*g.GRIDSIZE, \
-																	 g.WINWIDTH, 5*g.GRIDSIZE, \
-																	 message, frames_between_letters, \
-																	 text_counter, message_done)
+		if dialog_box.message is not None:
+			dialog_box.draw_dialog_box()
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
@@ -118,11 +108,11 @@ def runGame():
 				targetx += g.GRIDSIZE
 		# Testing
 		if keys[K_z]:
-			message = "□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert kljsl* fat ajshdflkjasdkfjaslkdjf dfhasd test test 12345"
+			dialog_box.message = "□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert kljsl* fat ajshdflkjasdkfjaslkdjf dfhasd test test 12345"
 		if not keys[K_z]:
-			message = None
-			text_counter = 0
-			message_done = False
+			dialog_box.message = None
+			dialog_box.text_counter = 0
+			dialog_box.message_done = False
 
 
 		if targetx > playerx: # Target to the right
