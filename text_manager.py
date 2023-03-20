@@ -8,6 +8,9 @@ import spritesheet
 IMAGE_WIDTH, IMAGE_HEIGHT = 160, 160
 COLUMNS, ROWS = 16, 16
 CHARACTER_WIDTH, CHARACTER_HEIGHT = int(IMAGE_WIDTH / COLUMNS), int(IMAGE_HEIGHT / ROWS)
+# CHARACTER_WIDTH and CHARACTER_HEIGHT really should be the same as g.GRIDSIZE. 
+# If that ever changes things may need refactoring.
+
 # These are the characters from code page 437: https://en.wikipedia.org/wiki/Code_page_437
 CHARACTER_LIST = [ 
 	 "", "☺", "☻", "♥", "♦", "♣", "♠", "•", "◘", "○", "◙", "♂", "♀", "♪", "♫", "☼", # Using "" for the NUL character.
@@ -49,6 +52,10 @@ class DialogBox:
 		self.height 				= 5*g.GRIDSIZE
 		self.list_of_lines          = []
 		self.line_counter           = 0
+		self.is_too_short           = False
+		self.flash_counter          = 0
+		self.ready_for_input        = False
+		self.continue_inputted      = False
 
 	def break_message_to_fit_box(self):
 		"""Takes self.message, splits it into substrings, and
@@ -59,7 +66,7 @@ class DialogBox:
 			list_of_words[i] = word + " "
 		current_line = ""
 		while list_of_words != []:
-			if len(current_line) + len(list_of_words[0]) < self.width/g.GRIDSIZE - 2:
+			if len(current_line) + len(list_of_words[0]) <= self.width/g.GRIDSIZE - 2:
 				current_line += list_of_words[0]
 				del list_of_words[0]
 			else:
@@ -68,7 +75,11 @@ class DialogBox:
 		self.list_of_lines.append(current_line)
 
 	def buffer_text(self, line):
-		if self.text_counter <= self.frames_between_letters * len(line) and not self.line_done and not self.message_done:
+		if (
+			self.text_counter <= self.frames_between_letters * len(line) \
+			and not self.line_done \
+			and not self.message_done
+		):
 			buffer_message = line[0:self.text_counter//self.frames_between_letters]
 			self.text_counter += 1
 		else:
@@ -77,34 +88,66 @@ class DialogBox:
 			buffer_message = line
 		return buffer_message
 
+	def check_if_box_is_too_short(self):
+		if len(self.list_of_lines) >= self.height//g.GRIDSIZE:
+			self.is_too_short = True
+
 	def draw_dialog_box(self):
+		self.draw_dialog_frame()
+		self.draw_dialog_text()
+
+	def draw_dialog_frame(self):
 		# Draw the background of the box.
-		pygame.draw.rect(self.DISPLAYSURF, g.WHITE, (self.topleftx, self.toplefty, self.width, self.height+g.GRIDSIZE))
+		pygame.draw.rect(
+			self.DISPLAYSURF, g.WHITE, \
+			(self.topleftx, self.toplefty, self.width, self.height+g.GRIDSIZE)
+		)
 
 		# Draw the four corners of the frame.
-		self.write_message(input_message="╔", x=self.topleftx,                       y=self.toplefty)
-		self.write_message(input_message="╗", x=self.topleftx+self.width-g.GRIDSIZE, y=self.toplefty)
-		self.write_message(input_message="╚", x=self.topleftx,                       y=self.toplefty+self.height)
-		self.write_message(input_message="╝", x=self.topleftx+self.width-g.GRIDSIZE, y=self.toplefty+self.height)
+		self.write_message(
+			input_message="╔", x=self.topleftx, y=self.toplefty
+		)
+		self.write_message(
+			input_message="╗", x=self.topleftx+self.width-g.GRIDSIZE, y=self.toplefty
+		)
+		self.write_message(
+			input_message="╚", x=self.topleftx, y=self.toplefty+self.height
+		)
+		self.write_message(
+			input_message="╝", x=self.topleftx+self.width-g.GRIDSIZE, y=self.toplefty+self.height
+		)
 
 		# Draw the top and bottom of the frame.
 		for gridx in range(self.width//g.GRIDSIZE-2):
-			self.write_message(input_message="═", x=self.topleftx+(gridx+1)*g.GRIDSIZE, y=self.toplefty)
-			self.write_message(input_message="═", x=self.topleftx+(gridx+1)*g.GRIDSIZE, y=self.toplefty+self.height)
+			self.write_message(
+				input_message="═", x=self.topleftx+(gridx+1)*g.GRIDSIZE, y=self.toplefty
+			)
+			self.write_message(
+				input_message="═", x=self.topleftx+(gridx+1)*g.GRIDSIZE, y=self.toplefty+self.height
+			)
 
 		# Draw the sides of the frame.
 		for gridy in range(self.height//g.GRIDSIZE-1):
-			self.write_message(input_message="║", x=self.topleftx,                       y=self.toplefty+(gridy+1)*g.GRIDSIZE)
-			self.write_message(input_message="║", x=self.topleftx+self.width-g.GRIDSIZE, y=self.toplefty+(gridy+1)*g.GRIDSIZE)
+			self.write_message(
+				input_message="║", x=self.topleftx, y=self.toplefty+(gridy+1)*g.GRIDSIZE
+			)
+			self.write_message(
+				input_message="║", x=self.topleftx+self.width-g.GRIDSIZE, y=self.toplefty+(gridy+1)*g.GRIDSIZE
+			)
 
-		# Draw the text. First we generate the list_of_lines.
+	def draw_dialog_text(self):
+		# First we generate the list_of_lines.
 		if self.list_of_lines == []:
 			self.break_message_to_fit_box() 
 
+		self.check_if_box_is_too_short()
+
 		# Next we typewriter out the lines in list_of_lines, one at a time.
-		if self.line_counter < len(self.list_of_lines):
+		if self.line_counter < min(len(self.list_of_lines), self.height//g.GRIDSIZE-1):
 			buff = self.buffer_text(self.list_of_lines[self.line_counter])
-			self.write_message(buff, x=self.topleftx+g.GRIDSIZE, y=self.toplefty+g.GRIDSIZE*(self.line_counter+1))
+			self.write_message(
+				input_message=buff, x=self.topleftx+g.GRIDSIZE, y=self.toplefty+g.GRIDSIZE*(self.line_counter+1)
+			)
 			if self.line_done and not self.message_done:
 				self.line_counter += 1
 				self.line_done = False
@@ -113,8 +156,11 @@ class DialogBox:
 
 		# This code writes the lines that we've already typewritered, so that they don't disappear.
 		for line in range(self.line_counter):
-			self.write_message(self.list_of_lines[line], x=self.topleftx+g.GRIDSIZE, y=self.toplefty+g.GRIDSIZE*(line+1))
-
+			self.write_message(
+				input_message=self.list_of_lines[line], x=self.topleftx+g.GRIDSIZE, y=self.toplefty+g.GRIDSIZE*(line+1)
+			)
+		if self.message_done:
+			self.waiting_for_input()
 
 	def get_font_from(self, image_file):
 		CHARACTERS = {}
@@ -128,15 +174,48 @@ class DialogBox:
 		return CHARACTERS
 
 	def turn_off(self):
-		self.text_counter  = 0
-		self.message_done  = False
-		self.line_done     = False
-		self.list_of_lines = []
-		self.line_counter  = 0
+		self.text_counter  	   = 0
+		self.message_done  	   = False
+		self.line_done     	   = False
+		self.message 	   	   = None
+		self.list_of_lines 	   = []
+		self.line_counter 	   = 0
+		self.is_too_short      = False
+		self.flash_counter     = 0
+		self.ready_for_input   = False
+		self.continue_inputted = False
+
+	def waiting_for_input(self):
+		self.ready_for_input = True
+
+		# This value is the number of times per second the "▼" flashes.
+		flash_freq_sec = 2
+
+		# This converts flash_freq_sec to a number of frames.
+		flash_freq_frames   = g.FPS // flash_freq_sec 
+
+		# Tick up the counter.
+		self.flash_counter += 1 
+
+		# Roll over the counter if you reach flash_freq_frames.
+		self.flash_counter  = self.flash_counter % flash_freq_frames 
+
+		if self.flash_counter < flash_freq_frames // 2: # Alternate on/off.
+			self.write_message(
+				input_message="▼", x=self.topleftx+self.width-g.GRIDSIZE*2, y=self.toplefty+self.height-g.GRIDSIZE
+			)
+		if self.continue_inputted:
+			for _ in range(self.height//g.GRIDSIZE-1):
+				if self.list_of_lines != []:
+					del self.list_of_lines[0]
+			self.line_counter = 0
+			self.message_done = False
+			self.ready_for_input = False
+			self.continue_inputted = False
 
 	def write_message(self, input_message, x, y):
-		"""Input a character dictionary, a message, and a coordinate (x,y).
-		Outputs the message drawn in the character set starting at the specified coordinate."""
+		"""Input a message and a coordinate (x,y).
+		Outputs the message drawn starting at the specified coordinate."""
 		list_of_letters = [letter for letter in input_message]
 		letter_count = 0
 		for letter in list_of_letters:

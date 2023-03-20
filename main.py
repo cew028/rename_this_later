@@ -35,7 +35,7 @@ def get_sprite_from(image_file):
 	return SPRITES
 
 def main():
-	global FPSCLOCK, DISPLAYSURF, BASICFONT
+	global FPSCLOCK, DISPLAYSURF # These can't go in global_constants because you need to pygame.init() first.
 	pygame.init()
 	FPSCLOCK = pygame.time.Clock()
 	# pygame.display.set_icon(pygame.image.load(".png")) TODO
@@ -57,7 +57,12 @@ def runGame():
 	targetx          = playerx # x-coordinate of the destination when you start walking
 	targety          = playery # y-coordinate of the destination when you start walking
 	moving           = False
-	move_delay       = 4 # Number of frames to wait before moving. If you tap, you don't move; you have to hold to move.
+	MOVE_DELAY_CONST = g.FPS // 30 # Syntactic sugar; see move_delay.
+	move_delay       = 4 * MOVE_DELAY_CONST # Number of frames to wait before moving. 
+									   		# If you tap, you don't move; you have to hold to move.
+						 			 		# It felt good when move_delay was 4 at 30 FPS, so the 
+						 					# offset ensures that no matter what g.FPS is, 
+						 			   		# the move_delay is about the same.
 	move_delay_count = 0
 	player_sprite    = "player_left"
 	dialog_box       = text_manager.DialogBox(DISPLAYSURF = DISPLAYSURF,)
@@ -66,12 +71,25 @@ def runGame():
 		# current_time = FPSCLOCK.get_time()
 		camerax = playerx # x-coordinate of the center of the camera
 		cameray = playery # y-coordinate of the center of the camera
-		DISPLAYSURF.fill(g.WHITE)
-		camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")[player_sprite], playerx, playery, camerax, cameray)
+		DISPLAYSURF.fill(g.BLACK)
+		camera_controller(
+			DISPLAYSURF, \
+			get_sprite_from("spritesheet.png")[player_sprite], \
+			playerx, playery, \
+			camerax, cameray
+		)
 		for block in BLOCKS:
-			camera_controller(DISPLAYSURF, get_sprite_from("spritesheet.png")["block"], block[0], block[1],camerax, cameray)
+			camera_controller(
+				DISPLAYSURF, \
+				get_sprite_from("spritesheet.png")["block"], \
+				block[0], block[1],\
+				camerax, cameray
+			)
 		if dialog_box.message is not None:
 			dialog_box.draw_dialog_box()
+			print(f"is_too_short = {dialog_box.is_too_short}")
+			print(f"ready_for_input = {dialog_box.ready_for_input}")
+			print(f"continue_inputted = {dialog_box.continue_inputted}")
 		else:
 			dialog_box.turn_off()
 
@@ -110,8 +128,14 @@ def runGame():
 				targetx += g.GRIDSIZE
 		# Testing
 		if keys[K_z]:
-			dialog_box.message = "□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert kljsl* fat ajshdflkjasdkfjaslkdjf dfhasd test test 12345"
-		if not keys[K_z]:
+			dialog_box.message = "□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert \
+			kljsl* fat ajshdflkjasdkfjaslkdjf dfhasds \
+			test test 12345 TEST TEST THE QUICK BROWN FOX \
+			JUMPED OVER THE LAZY DOG is this too long to \
+			fit? Hooray now it works just fine. I am the best." # The break at "to" is the place where it leaves the dialog box.
+		if keys[K_x] and dialog_box.ready_for_input:
+			dialog_box.continue_inputted = True
+		if keys[K_BACKSPACE]:
 			dialog_box.message = None
 
 
