@@ -28,6 +28,7 @@ class Player:
 		self.SPRITESHEET      = SPRITESHEET
 		self.sprite   		  = self.SPRITESHEET["player_down"]
 		self.direction        = "down"
+		self.can_move         = True
 
 	def adjacent_obstruction(self):
 		"""This function is syntactic sugar to run self.return_obstruction()
@@ -114,11 +115,12 @@ class Player:
 
 	def run(self):
 		self.get_sprite()
-		self.movement()
+		if self.can_move:
+			self.movement()
 
 	def start_conversation(self, dialog_box):
 		keys = pygame.key.get_pressed()
-		
+
 		if self.adjacent_obstruction() == "thing":
 			dialog_box.message = "□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert \
 				kljsl* fas ajshdflkjasdkfjaslkdjf dfhasds \

@@ -13,4 +13,5 @@ BLOCKS = [
 
 THINGS_TO_TALK_TO = [
 	(0, 10),
+	(-20, -10),
 ]
