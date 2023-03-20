@@ -2,93 +2,74 @@ import pygame
 import sys
 from pygame.locals import *
 
-import global_constants as g
-import spritesheet
-import text_manager
-
-BLOCKS = [
-	(10, 10),
-	(20, 20),
-	(10, 20),
-	(10, 30),
-	(10, 40),
-	(10, 50),
-	(10, 60),
-	(10, 70),
-	(10, 80),
-	(10, 90),
-]
-
+import global_constants as gc
+import player_manager as pm
+import spritesheet as ss
+import text_manager as tm
+import world_map as wm
 
 
 def camera_controller(DISPLAYSURF, object, objectx, objecty, camerax, cameray):
-	DISPLAYSURF.blit(object, (objectx-camerax+g.HALFWINWIDTH, objecty-cameray+g.HALFWINHEIGHT))
+	DISPLAYSURF.blit(object, (objectx-camerax+gc.HALFWINWIDTH, objecty-cameray+gc.HALFWINHEIGHT))
 
 def get_sprite_from(image_file):
-	SPRITES = {
-		"player_left":  spritesheet.spritesheet(image_file).image_at(( 0,  0, 10, 10), colorkey = 0),
-		"player_up":    spritesheet.spritesheet(image_file).image_at((10,  0, 10, 10), colorkey = 0),
-		"player_right": spritesheet.spritesheet(image_file).image_at((20,  0, 10, 10), colorkey = 0),
-		"player_down":  spritesheet.spritesheet(image_file).image_at((30,  0, 10, 10), colorkey = 0),
-		"block":        spritesheet.spritesheet(image_file).image_at((40,  0, 10, 10), colorkey = 0),
+	SPRITESHEET = {
+		"player_left":  ss.spritesheet(image_file).image_at(( 0,  0, 10, 10), colorkey = 0),
+		"player_up":    ss.spritesheet(image_file).image_at((10,  0, 10, 10), colorkey = 0),
+		"player_right": ss.spritesheet(image_file).image_at((20,  0, 10, 10), colorkey = 0),
+		"player_down":  ss.spritesheet(image_file).image_at((30,  0, 10, 10), colorkey = 0),
+		"block":        ss.spritesheet(image_file).image_at((40,  0, 10, 10), colorkey = 0),
+		"test_thing":   ss.spritesheet(image_file).image_at((50,  0, 10, 10), colorkey = 0),
 	}
-	return SPRITES
+	return SPRITESHEET
 
 def main():
 	global FPSCLOCK, DISPLAYSURF # These can't go in global_constants because you need to pygame.init() first.
 	pygame.init()
 	FPSCLOCK = pygame.time.Clock()
 	# pygame.display.set_icon(pygame.image.load(".png")) TODO
-	DISPLAYSURF = pygame.display.set_mode((g.WINWIDTH, g.WINHEIGHT), SCALED)
+	DISPLAYSURF = pygame.display.set_mode((gc.WINWIDTH, gc.WINHEIGHT), SCALED)
 	pygame.display.set_caption("Title")
 
 	while True:
-		runGame()
+		run_game()
 
-def place_free(targetx, targety):
-	for block in BLOCKS:
-		if block == (targetx, targety):
-			return False
-	return True
-
-def runGame():
-	playerx          = 0 # x-coordinate of the player
-	playery          = 0 # y-coordinate of the player
-	targetx          = playerx # x-coordinate of the destination when you start walking
-	targety          = playery # y-coordinate of the destination when you start walking
-	moving           = False
-	MOVE_DELAY_CONST = g.FPS // 30 # Syntactic sugar; see move_delay.
-	move_delay       = 4 * MOVE_DELAY_CONST # Number of frames to wait before moving. 
-									   		# If you tap, you don't move; you have to hold to move.
-						 			 		# It felt good when move_delay was 4 at 30 FPS, so the 
-						 					# offset ensures that no matter what g.FPS is, 
-						 			   		# the move_delay is about the same.
-	move_delay_count = 0
-	player_sprite    = "player_left"
-	dialog_box       = text_manager.DialogBox(DISPLAYSURF = DISPLAYSURF,)
+def run_game():
+	player = pm.Player(
+		DISPLAYSURF = DISPLAYSURF,
+		SPRITESHEET = get_sprite_from("spritesheet.png"),
+	)
+	dialog_box = tm.DialogBox(
+		DISPLAYSURF = DISPLAYSURF,
+	)
 
 	while True:
 		# current_time = FPSCLOCK.get_time()
-		camerax = playerx # x-coordinate of the center of the camera
-		cameray = playery # y-coordinate of the center of the camera
-		DISPLAYSURF.fill(g.BLACK)
-		camera_controller(
-			DISPLAYSURF, \
-			get_sprite_from("spritesheet.png")[player_sprite], \
-			playerx, playery, \
-			camerax, cameray
-		)
-		for block in BLOCKS:
+		camerax, cameray = player.x, player.y 
+		DISPLAYSURF.fill(gc.BLACK)
+		for block in wm.BLOCKS:
 			camera_controller(
 				DISPLAYSURF, \
 				get_sprite_from("spritesheet.png")["block"], \
 				block[0], block[1],\
 				camerax, cameray
 			)
-		if dialog_box.message is not None:
-			dialog_box.draw_dialog_box()
-		else:
-			dialog_box.turn_off()
+		for thing in wm.THINGS_TO_TALK_TO:
+			camera_controller(
+				DISPLAYSURF, \
+				get_sprite_from("spritesheet.png")["test_thing"], \
+				thing[0], thing[1], \
+				camerax, cameray
+			)
+		camera_controller( # Draw the player last so it's always on top.
+			DISPLAYSURF, \
+			player.sprite, \
+			player.x, player.y, \
+			camerax, cameray
+		)
+
+		player.run()
+		dialog_box.run()
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
@@ -96,69 +77,11 @@ def runGame():
 			elif event.type == KEYDOWN:
 				if event.key == K_ESCAPE:
 					terminate()
-
-		keys = pygame.key.get_pressed()
-
-		if keys[K_UP] and not moving:
-			player_sprite = "player_up"
-			move_delay_count += 1
-			if move_delay_count >= move_delay and place_free(playerx, playery - g.GRIDSIZE):
-				moving = True
-				targety -= g.GRIDSIZE
-		if keys[K_DOWN] and not moving:
-			player_sprite = "player_down"
-			move_delay_count += 1
-			if move_delay_count >= move_delay and place_free(playerx, playery + g.GRIDSIZE):
-				moving = True
-				targety += g.GRIDSIZE
-		if keys[K_LEFT] and not moving:
-			player_sprite = "player_left"
-			move_delay_count += 1
-			if move_delay_count >= move_delay and place_free(playerx - g.GRIDSIZE, playery):
-				moving = True
-				targetx -= g.GRIDSIZE
-		if keys[K_RIGHT] and not moving:
-			player_sprite = "player_right"
-			move_delay_count += 1
-			if move_delay_count >= move_delay and place_free(playerx + g.GRIDSIZE, playery):
-				moving = True
-				targetx += g.GRIDSIZE
-		# Testing
-		if keys[K_z]:
-			dialog_box.message = "1Test 2Test 3Test 4Test 5Test 6Test 7Test "*4
-
-			"□ Test. TEST. ☺ 01234. \\□\\\\ klwjer lkwjert \
-			kljsl* fat ajshdflkjasdkfjaslkdjf dfhasds \
-			test test 12345 TEST TEST THE QUICK BROWN FOX \
-			JUMPED OVER THE LAZY DOG is this too long to \
-			fit? Hooray now it works just fine. I am the \
-			best. It even wraps across more than two \
-			pages -- see watch this fjskaljdfj \
-			jskafjklfjskl adjlk fjkljlkasdf jsadf test" # The break at "to" is the place where it leaves the dialog box.
-		if keys[K_x] and dialog_box.ready_for_input:
-			dialog_box.continue_inputted = True
-		if keys[K_BACKSPACE]:
-			dialog_box.turn_off()
-
-
-		if targetx > playerx: # Target to the right
-			playerx += 2 
-		if targetx < playerx: # Target to the left
-			playerx -= 2
-		if targety > playery: # Target below
-			playery += 2 
-		if targety < playery: # Target above
-			playery -= 2
-
-		if not (keys[K_UP] or keys[K_DOWN] or keys[K_LEFT] or keys[K_RIGHT]):
-			move_delay_count = 0
-
-		if moving and targetx == playerx and targety == playery:
-			moving = False
-
+				if event.key == K_z:
+					player.start_conversation(dialog_box = dialog_box)
 
 		pygame.display.update()
-		FPSCLOCK.tick(g.FPS)
+		FPSCLOCK.tick(gc.FPS)
 
 def terminate():
 	pygame.quit()
