@@ -83,7 +83,9 @@ def run_game():
 				if event.key == K_ESCAPE:
 					terminate()
 				if event.key == K_z:
-					player.start_conversation(dialog_box = dialog_box)
+					player.start_conversation(
+							dialog_box = dialog_box,
+						)
 
 		pygame.display.update()
 		FPSCLOCK.tick(gc.FPS)

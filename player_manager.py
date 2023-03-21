@@ -123,8 +123,10 @@ class Player:
 
 		match self.adjacent_obstruction():
 			case "guy1":
+				dialog_box.speaker = "Guy1"
 				dialog_box.message = "This is guy1."
 			case "guy2":
+				dialog_box.speaker = "Guy2 longer name test"
 				dialog_box.message = "This is guy2."
 		if keys[K_z] and dialog_box.ready_for_input:
 		 	dialog_box.continue_inputted = True

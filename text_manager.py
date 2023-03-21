@@ -56,6 +56,7 @@ class DialogBox:
 		self.flash_counter          = 0
 		self.ready_for_input        = False
 		self.continue_inputted      = False
+		self.speaker                = None
 
 	def break_message_to_fit_box(self):
 		"""Takes self.message, splits it into substrings, and
@@ -116,14 +117,26 @@ class DialogBox:
 		self.write_message(
 			input_message="╝", x=self.topleftx+self.width-gc.GRIDSIZE, y=self.toplefty+self.height
 		)
+		# Draw the speaker's name.
+		self.write_message(
+			input_message=self.speaker, x=self.topleftx+2*gc.GRIDSIZE, y=self.toplefty
+		)
 
-		# Draw the top and bottom of the frame.
+		# Draw the bottom of the frame.
 		for gridx in range(self.width//gc.GRIDSIZE-2):
 			self.write_message(
-				input_message="═", x=self.topleftx+(gridx+1)*gc.GRIDSIZE, y=self.toplefty
-			)
-			self.write_message(
 				input_message="═", x=self.topleftx+(gridx+1)*gc.GRIDSIZE, y=self.toplefty+self.height
+			)
+
+		# Draw the top of the frame.
+		self.write_message(
+			input_message="═", x=self.topleftx+gc.GRIDSIZE, y=self.toplefty
+		)
+		for gridx in range(self.width//gc.GRIDSIZE-3):
+			if gridx < len(self.speaker):
+				continue
+			self.write_message(
+				input_message="═", x=self.topleftx+(gridx+2)*gc.GRIDSIZE, y=self.toplefty
 			)
 
 		# Draw the sides of the frame.
@@ -190,6 +203,7 @@ class DialogBox:
 		self.flash_counter     = 0
 		self.ready_for_input   = False
 		self.continue_inputted = False
+		self.speaker           = None
 
 	def waiting_for_input(self):
 		self.ready_for_input = True
