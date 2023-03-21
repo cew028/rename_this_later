@@ -81,6 +81,8 @@ def run_game():
 		else:
 			player.can_move = True
 			clock.can_run   = True
+			for entity in en.LIST_OF_ENTITIES:
+				entity.in_conversation = False
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
@@ -90,10 +92,11 @@ def run_game():
 					terminate()
 				if event.key == K_z:
 					dialog_target = player.attempt_dialog()
-					if dialog_target is not None:
-						dialog_target.start_conversation(
-							dialog_box = dialog_box,
-						)
+					if dialog_target is not None: 
+						if not dialog_target.in_conversation:
+							dialog_target.start_conversation(
+								dialog_box = dialog_box,
+							)
 
 		pygame.display.update()
 		FPSCLOCK.tick(gc.FPS)

@@ -1,5 +1,7 @@
 import pygame
 
+from pygame.locals import *
+
 import global_constants as gc
 import spritesheet as ss
 
@@ -34,6 +36,17 @@ CHARACTER_LIST = [
 ]
 
 
+def get_font_from(image_file):
+	CHARACTERS = {}
+	for i, char in enumerate(CHARACTER_LIST):
+		column = i % COLUMNS
+		row = i // COLUMNS
+		CHARACTERS[char] = ss.spritesheet(image_file).image_at(
+			(column*CHARACTER_WIDTH, row*CHARACTER_HEIGHT, CHARACTER_WIDTH, CHARACTER_HEIGHT),
+			colorkey = -1
+		)
+	return CHARACTERS
+
 class DialogBox:
 	def __init__(
 			self, 
@@ -44,7 +57,7 @@ class DialogBox:
 		self.message_done 			= False
 		self.line_done              = False
 		self.message 				= None
-		self.CHARACTERS 			= self.get_font_from("font.png")
+		self.CHARACTERS 			= get_font_from("font.png")
 		self.DISPLAYSURF 			= DISPLAYSURF
 		self.topleftx 				= 0
 		self.toplefty 				= gc.WINHEIGHT - 6*gc.GRIDSIZE
@@ -176,21 +189,15 @@ class DialogBox:
 		if self.message_done:
 			self.waiting_for_input()
 
-	def get_font_from(self, image_file):
-		CHARACTERS = {}
-		for i, char in enumerate(CHARACTER_LIST):
-			column = i % COLUMNS
-			row = i // COLUMNS
-			CHARACTERS[char] = ss.spritesheet(image_file).image_at(
-				(column*CHARACTER_WIDTH, row*CHARACTER_HEIGHT, CHARACTER_WIDTH, CHARACTER_HEIGHT),
-				colorkey = -1
-			)
-		return CHARACTERS
-
 	def run(self):
+		keys = pygame.key.get_pressed()
 		if self.message is not None:
 			self.draw_dialog_box()
 		else:
+			self.turn_off()
+		if keys[K_z] and self.ready_for_input:
+			self.continue_inputted = True
+		if keys[K_BACKSPACE]:
 			self.turn_off()
 
 	def turn_off(self):

@@ -12,24 +12,30 @@ class Entity:
 		x,
 		y,
 		list_of_messages,
+		message_index,
 		schedule,
+		in_conversation,
 	):
 		self.name             = name
 		self.x                = x
 		self.y                = y
 		self.list_of_messages = list_of_messages
+		self.message_index    = message_index
 		self.schedule         = schedule
+		self.in_conversation  = in_conversation
+
+	def change_message_index_to(self, new_index):
+		self.message_index = new_index
+		if self.message_index >= len(self.list_of_messages):
+			self.message_index = self.message_index % len(self.list_of_messages)
 
 	def start_conversation(self, dialog_box):
-		keys = pygame.key.get_pressed()
+		self.in_conversation = True
 
 		dialog_box.speaker = self.name
-		dialog_box.message = self.list_of_messages[0]
+		dialog_box.message = self.list_of_messages[self.message_index]
 
-		if keys[K_z] and dialog_box.ready_for_input:
-		 	dialog_box.continue_inputted = True
-		if keys[K_BACKSPACE]:
-		 	dialog_box.turn_off()
+		self.change_message_index_to(self.message_index + 1)
 
 
 guy1 = Entity(
@@ -41,7 +47,9 @@ guy1 = Entity(
 		"Welcome back. This is message 2.",
 		"Now this is message 3.",
 	],
+	message_index = 0,
 	schedule = None,
+	in_conversation = False
 )
 guy2 = Entity(
 	name = "Guy2", 
@@ -50,7 +58,9 @@ guy2 = Entity(
 	list_of_messages = [
 		"This is guy2.",
 	],
+	message_index = 0,
 	schedule = None,
+	in_conversation = False
 )
 
 LIST_OF_ENTITIES = [
