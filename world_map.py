@@ -12,6 +12,6 @@ BLOCKS = [
 ]
 
 THINGS_TO_TALK_TO = {
-	"guy1": (0, 10),
+	"guy1": (0, 20),
 	"guy2": (-20, -10),
 }

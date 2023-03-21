@@ -117,10 +117,6 @@ class DialogBox:
 		self.write_message(
 			input_message="╝", x=self.topleftx+self.width-gc.GRIDSIZE, y=self.toplefty+self.height
 		)
-		# Draw the speaker's name.
-		self.write_message(
-			input_message=self.speaker, x=self.topleftx+2*gc.GRIDSIZE, y=self.toplefty
-		)
 
 		# Draw the bottom of the frame.
 		for gridx in range(self.width//gc.GRIDSIZE-2):
@@ -128,13 +124,18 @@ class DialogBox:
 				input_message="═", x=self.topleftx+(gridx+1)*gc.GRIDSIZE, y=self.toplefty+self.height
 			)
 
+		# Draw the speaker's name.
+		self.write_message(
+			input_message=self.speaker, x=self.topleftx+2*gc.GRIDSIZE, y=self.toplefty
+		)
+
 		# Draw the top of the frame.
 		self.write_message(
 			input_message="═", x=self.topleftx+gc.GRIDSIZE, y=self.toplefty
 		)
 		for gridx in range(self.width//gc.GRIDSIZE-3):
 			if gridx < len(self.speaker):
-				continue
+				continue # This is where the speaker has been written.
 			self.write_message(
 				input_message="═", x=self.topleftx+(gridx+2)*gc.GRIDSIZE, y=self.toplefty
 			)

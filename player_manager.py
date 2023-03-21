@@ -54,7 +54,7 @@ class Player:
 			case "right":
 				self.sprite = self.SPRITESHEET["player_right"]
 
-	def movement(self):
+	def movement(self, clock):
 		keys = pygame.key.get_pressed()
 
 		if keys[K_UP] and not self.moving:
@@ -64,6 +64,7 @@ class Player:
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targety -= gc.GRIDSIZE
+				clock.add_minutes(5)
 		if keys[K_DOWN] and not self.moving:
 			self.direction = "down"
 			self.move_delay_count += 1
@@ -71,6 +72,7 @@ class Player:
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targety += gc.GRIDSIZE
+				clock.add_minutes(5)
 		if keys[K_LEFT] and not self.moving:
 			self.direction = "left"
 			self.move_delay_count += 1
@@ -78,6 +80,7 @@ class Player:
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targetx -= gc.GRIDSIZE
+				clock.add_minutes(5)
 		if keys[K_RIGHT] and not self.moving:
 			self.direction = "right"
 			self.move_delay_count += 1
@@ -85,13 +88,14 @@ class Player:
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targetx += gc.GRIDSIZE
+				clock.add_minutes(5)
 
 		if self.targetx > self.x: # Target to the right
 			self.x += 2 
 		if self.targetx < self.x: # Target to the left
 			self.x -= 2
 		if self.targety > self.y: # Target below
-			self.y += 2 
+			self.y += 2
 		if self.targety < self.y: # Target above
 			self.y -= 2
 
@@ -113,22 +117,9 @@ class Player:
 				return thing
 		return None
 
-	def run(self):
+	def run(self, clock):
 		self.get_sprite()
 		if self.can_move:
-			self.movement()
+			self.movement(clock)
 
-	def start_conversation(self, dialog_box):
-		keys = pygame.key.get_pressed()
-
-		match self.adjacent_obstruction():
-			case "guy1":
-				dialog_box.speaker = "Guy1"
-				dialog_box.message = "This is guy1."
-			case "guy2":
-				dialog_box.speaker = "Guy2 longer name test"
-				dialog_box.message = "This is guy2."
-		if keys[K_z] and dialog_box.ready_for_input:
-		 	dialog_box.continue_inputted = True
-		if keys[K_BACKSPACE]:
-		 	dialog_box.turn_off()
+	

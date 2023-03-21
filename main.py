@@ -2,6 +2,8 @@ import pygame
 import sys
 from pygame.locals import *
 
+import clock_manager as cm
+import entities as en
 import global_constants as gc
 import player_manager as pm
 import spritesheet as ss
@@ -42,6 +44,8 @@ def run_game():
 	dialog_box = tm.DialogBox(
 		DISPLAYSURF = DISPLAYSURF,
 	)
+	clock = cm.Clock()
+	# clock.time_counter = 219530*3-100000-10000*3-10000
 
 	while True:
 		# current_time = FPSCLOCK.get_time()
@@ -68,8 +72,9 @@ def run_game():
 			camerax, cameray
 		)
 
-		player.run()
+		player.run(clock = clock)
 		dialog_box.run()
+		print(clock.format_date_and_time())
 
 		if dialog_box.message is not None:
 			player.can_move = False
@@ -83,9 +88,11 @@ def run_game():
 				if event.key == K_ESCAPE:
 					terminate()
 				if event.key == K_z:
-					player.start_conversation(
-							dialog_box = dialog_box,
-						)
+					en.start_conversation(
+						player = player,
+						dialog_box = dialog_box,
+						clock = clock,
+					)
 
 		pygame.display.update()
 		FPSCLOCK.tick(gc.FPS)
