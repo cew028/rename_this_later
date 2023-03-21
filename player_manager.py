@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 
+import entities as en
 import global_constants as gc
 import text_manager as tm
 import world_map as wm
@@ -43,6 +44,12 @@ class Player:
 			case "right":
 				return self.return_obstruction(self.x + gc.GRIDSIZE, self.y)
 
+	def attempt_dialog(self):
+		if self.adjacent_obstruction() is not {None, "block"}:
+			return self.adjacent_obstruction()
+		else:
+			return None
+
 	def get_sprite(self):
 		match self.direction:
 			case "up":
@@ -54,7 +61,7 @@ class Player:
 			case "right":
 				self.sprite = self.SPRITESHEET["player_right"]
 
-	def movement(self, clock):
+	def movement(self):
 		keys = pygame.key.get_pressed()
 
 		if keys[K_UP] and not self.moving:
@@ -64,7 +71,6 @@ class Player:
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targety -= gc.GRIDSIZE
-				clock.add_minutes(5)
 		if keys[K_DOWN] and not self.moving:
 			self.direction = "down"
 			self.move_delay_count += 1
@@ -72,7 +78,6 @@ class Player:
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targety += gc.GRIDSIZE
-				clock.add_minutes(5)
 		if keys[K_LEFT] and not self.moving:
 			self.direction = "left"
 			self.move_delay_count += 1
@@ -80,7 +85,6 @@ class Player:
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targetx -= gc.GRIDSIZE
-				clock.add_minutes(5)
 		if keys[K_RIGHT] and not self.moving:
 			self.direction = "right"
 			self.move_delay_count += 1
@@ -88,7 +92,6 @@ class Player:
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targetx += gc.GRIDSIZE
-				clock.add_minutes(5)
 
 		if self.targetx > self.x: # Target to the right
 			self.x += 2 
@@ -112,14 +115,14 @@ class Player:
 		for block in wm.BLOCKS:
 			if block == (x, y):
 				return "block"
-		for thing, coord in wm.THINGS_TO_TALK_TO.items():
-			if coord == (x, y):
-				return thing
+		for entity in en.LIST_OF_ENTITIES:
+			if entity.x == x and entity.y == y:
+				return entity
 		return None
 
-	def run(self, clock):
+	def run(self):
 		self.get_sprite()
 		if self.can_move:
-			self.movement(clock)
+			self.movement()
 
 	

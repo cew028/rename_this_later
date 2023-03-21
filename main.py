@@ -45,10 +45,8 @@ def run_game():
 		DISPLAYSURF = DISPLAYSURF,
 	)
 	clock = cm.Clock()
-	# clock.time_counter = 219530*3-100000-10000*3-10000
 
 	while True:
-		# current_time = FPSCLOCK.get_time()
 		camerax, cameray = player.x, player.y 
 		DISPLAYSURF.fill(gc.BLACK)
 		for block in wm.BLOCKS:
@@ -58,11 +56,11 @@ def run_game():
 				block[0], block[1],\
 				camerax, cameray
 			)
-		for coord in wm.THINGS_TO_TALK_TO.values():
+		for entity in en.LIST_OF_ENTITIES:
 			camera_controller(
 				DISPLAYSURF, \
 				get_sprite_from("spritesheet.png")["test_thing"], \
-				coord[0], coord[1], \
+				entity.x, entity.y, \
 				camerax, cameray
 			)
 		camera_controller( # Draw the player last so it's always on top.
@@ -72,8 +70,9 @@ def run_game():
 			camerax, cameray
 		)
 
-		player.run(clock = clock)
+		player.run()
 		dialog_box.run()
+		clock.run()
 		print(clock.format_date_and_time())
 
 		if dialog_box.message is not None:
@@ -88,11 +87,11 @@ def run_game():
 				if event.key == K_ESCAPE:
 					terminate()
 				if event.key == K_z:
-					en.start_conversation(
-						player = player,
-						dialog_box = dialog_box,
-						clock = clock,
-					)
+					dialog_target = player.attempt_dialog()
+					if dialog_target is not None:
+						dialog_target.start_conversation(
+							dialog_box = dialog_box,
+						)
 
 		pygame.display.update()
 		FPSCLOCK.tick(gc.FPS)

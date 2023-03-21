@@ -2,25 +2,58 @@ import pygame
 
 from pygame.locals import *
 
-def start_conversation(player, dialog_box, clock):
-	keys = pygame.key.get_pressed()
+import global_constants as gc
 
-	match player.adjacent_obstruction():
-		case "guy1":
-			dialog_box.speaker = "Guy1"
-			dialog_box.message = "This is guy1. I want to test how word wrapping affects the clock. \
-			So this is a long message. Blah blah blah blah blah blah blah. \
-			The quick brown fox jumped over the lazy dog. Here is more text. It will go on for a while. \
-			Now it is finishing up. This is the second to last sentence. Finally, this is the last sentence."
-		case "guy2":
-			dialog_box.speaker = "Guy2 longer name test"
-			dialog_box.message = "This is guy2."
-	if keys[K_z] and dialog_box.ready_for_input:
-	 	dialog_box.continue_inputted = True
-	 	clock.add_minutes(10)
-	if keys[K_BACKSPACE]:
-	 	dialog_box.turn_off()
 
 class Entity:
-	def __init__(self):
-		pass
+	def __init__(
+		self,
+		name,
+		x,
+		y,
+		list_of_messages,
+		schedule,
+	):
+		self.name             = name
+		self.x                = x
+		self.y                = y
+		self.list_of_messages = list_of_messages
+		self.schedule         = schedule
+
+	def start_conversation(self, dialog_box):
+		keys = pygame.key.get_pressed()
+
+		dialog_box.speaker = self.name
+		dialog_box.message = self.list_of_messages[0]
+
+		if keys[K_z] and dialog_box.ready_for_input:
+		 	dialog_box.continue_inputted = True
+		if keys[K_BACKSPACE]:
+		 	dialog_box.turn_off()
+
+
+guy1 = Entity(
+	name = "Guy1", 
+	x = 0, 
+	y = 20,
+	list_of_messages = [
+		"Hello. This is message 1.",
+		"Welcome back. This is message 2.",
+		"Now this is message 3.",
+	],
+	schedule = None,
+)
+guy2 = Entity(
+	name = "Guy2", 
+	x = -20, 
+	y = -10,
+	list_of_messages = [
+		"This is guy2.",
+	],
+	schedule = None,
+)
+
+LIST_OF_ENTITIES = [
+	guy1,
+	guy2,
+]

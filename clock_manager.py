@@ -1,3 +1,5 @@
+import global_constants as gc
+
 MINUTES_IN_AN_HOUR = 60
 HOURS_IN_A_DAY     = 24
 DAYS_IN_A_YEAR     = 365
@@ -40,6 +42,7 @@ class Clock:
 		self.current_day    = 0 # 1 through 365.
 		self.current_hour   = 0 # 0 through 23.
 		self.current_minute = 0 # 0 through 59.
+		self.frame_ticker   = 0
 
 	def add_minutes(self, minutes):
 		self.time_counter += minutes
@@ -115,5 +118,11 @@ class Clock:
 	def get_time(self):
 		self.current_minute = self.time_counter % MINUTES_IN_AN_HOUR
 		self.current_hour   = (self.time_counter // MINUTES_IN_AN_HOUR) % HOURS_IN_A_DAY
+
+	def run(self):
+		self.frame_ticker += 1
+		if self.frame_ticker > gc.CLOCK_SPEED:
+			self.add_minutes(1)
+			self.frame_ticker = 0
 	
 	
