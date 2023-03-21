@@ -77,8 +77,10 @@ def run_game():
 
 		if dialog_box.message is not None:
 			player.can_move = False
+			clock.can_run   = False
 		else:
 			player.can_move = True
+			clock.can_run   = True
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
