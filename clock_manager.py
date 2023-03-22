@@ -39,7 +39,7 @@ class Clock:
 		self.time_counter   = 0 # In minutes. 0 is "12:00 midnight, Jan 1, year 0."
 		self.current_year   = 0 # Unbounded.
 		self.current_month  = 0 # 0 through 11.
-		self.current_day    = 0 # 1 through 365.
+		self.current_day    = 1 # 1 through 365.
 		self.current_hour   = 0 # 0 through 23.
 		self.current_minute = 0 # 0 through 59.
 		self.frame_ticker   = 0

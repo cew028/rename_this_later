@@ -1,9 +1,7 @@
 import pygame
-from pygame.locals import *
 
-import entities as en
+import entity_list as el
 import global_constants as gc
-import text_manager as tm
 import world_map as wm
 
 
@@ -64,28 +62,28 @@ class Player:
 	def movement(self):
 		keys = pygame.key.get_pressed()
 
-		if keys[K_UP] and not self.moving:
+		if keys[gc.UP] and not self.moving:
 			self.direction = "up"
 			self.move_delay_count += 1
 			if self.move_delay_count >= self.move_delay \
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targety -= gc.GRIDSIZE
-		if keys[K_DOWN] and not self.moving:
+		if keys[gc.DOWN] and not self.moving:
 			self.direction = "down"
 			self.move_delay_count += 1
 			if self.move_delay_count >= self.move_delay \
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targety += gc.GRIDSIZE
-		if keys[K_LEFT] and not self.moving:
+		if keys[gc.LEFT] and not self.moving:
 			self.direction = "left"
 			self.move_delay_count += 1
 			if self.move_delay_count >= self.move_delay \
 			and self.adjacent_obstruction() is None:
 				self.moving = True
 				self.targetx -= gc.GRIDSIZE
-		if keys[K_RIGHT] and not self.moving:
+		if keys[gc.RIGHT] and not self.moving:
 			self.direction = "right"
 			self.move_delay_count += 1
 			if self.move_delay_count >= self.move_delay \
@@ -102,7 +100,7 @@ class Player:
 		if self.targety < self.y: # Target above
 			self.y -= 2
 
-		if not (keys[K_UP] or keys[K_DOWN] or keys[K_LEFT] or keys[K_RIGHT]):
+		if not (keys[gc.UP] or keys[gc.DOWN] or keys[gc.LEFT] or keys[gc.RIGHT]):
 			self.move_delay_count = 0
 
 		if self.moving and self.targetx == self.x and self.targety == self.y:
@@ -115,7 +113,7 @@ class Player:
 		for block in wm.BLOCKS:
 			if block == (x, y):
 				return "block"
-		for entity in en.LIST_OF_ENTITIES:
+		for entity in el.LIST_OF_ENTITIES:
 			if entity.x == x and entity.y == y:
 				return entity
 		return None

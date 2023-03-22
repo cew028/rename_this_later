@@ -1,7 +1,5 @@
 import pygame
 
-from pygame.locals import *
-
 import global_constants as gc
 import spritesheet as ss
 
@@ -54,8 +52,8 @@ class DialogBox:
 		):
 		self.text_counter 			= 0
 		self.frames_between_letters = 1 # Make this value larger to write more slowly.
-		self.message_done 			= False
-		self.line_done              = False
+		self.block_done 			= False
+		self.line_done              = False           
 		self.message 				= None
 		self.CHARACTERS 			= get_font_from("font.png")
 		self.DISPLAYSURF 			= DISPLAYSURF
@@ -69,7 +67,7 @@ class DialogBox:
 		self.flash_counter          = 0
 		self.ready_for_input        = False
 		self.continue_inputted      = False
-		self.speaker                = None
+		self.speaker                = None		
 
 	def break_message_to_fit_box(self):
 		"""Takes self.message, splits it into substrings, and
@@ -92,7 +90,7 @@ class DialogBox:
 		if (
 			self.text_counter <= self.frames_between_letters * len(line) \
 			and not self.line_done \
-			and not self.message_done
+			and not self.block_done
 		):
 			buffer_message = line[0:self.text_counter//self.frames_between_letters]
 			self.text_counter += 1
@@ -175,18 +173,18 @@ class DialogBox:
 			self.write_message(
 				input_message=buff, x=self.topleftx+gc.GRIDSIZE, y=self.toplefty+gc.GRIDSIZE*(self.line_counter+1)
 			)
-			if self.line_done and not self.message_done:
+			if self.line_done and not self.block_done:
 				self.line_counter += 1
 				self.line_done = False
 		else:
-			self.message_done = True
+			self.block_done = True
 
 		# This code writes the lines that we've already typewritered, so that they don't disappear.
 		for line in range(self.line_counter):
 			self.write_message(
 				input_message=self.list_of_lines[line], x=self.topleftx+gc.GRIDSIZE, y=self.toplefty+gc.GRIDSIZE*(line+1)
 			)
-		if self.message_done:
+		if self.block_done:
 			self.waiting_for_input()
 
 	def run(self):
@@ -195,14 +193,14 @@ class DialogBox:
 			self.draw_dialog_box()
 		else:
 			self.turn_off()
-		if keys[K_z] and self.ready_for_input:
+		if keys[gc.A] and self.ready_for_input:
 			self.continue_inputted = True
-		if keys[K_BACKSPACE]:
+		if keys[gc.B]:
 			self.turn_off()
 
 	def turn_off(self):
 		self.text_counter  	   = 0
-		self.message_done  	   = False
+		self.block_done  	   = False
 		self.line_done     	   = False
 		self.message 	   	   = None
 		self.list_of_lines 	   = []
@@ -241,7 +239,7 @@ class DialogBox:
 				else:
 					self.message = None
 			self.line_counter = 0
-			self.message_done = False
+			self.block_done = False
 			self.ready_for_input = False
 			self.continue_inputted = False
 
@@ -253,4 +251,5 @@ class DialogBox:
 		for letter in list_of_letters:
 			self.DISPLAYSURF.blit(self.CHARACTERS[letter], (x + letter_count*CHARACTER_WIDTH, y))
 			letter_count += 1
+
 

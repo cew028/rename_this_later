@@ -3,7 +3,7 @@ import sys
 from pygame.locals import *
 
 import clock_manager as cm
-import entities as en
+import entity_list as el
 import global_constants as gc
 import player_manager as pm
 import spritesheet as ss
@@ -21,7 +21,7 @@ def get_sprite_from(image_file):
 		"player_right": ss.spritesheet(image_file).image_at((20,  0, 10, 10), colorkey = 0),
 		"player_down":  ss.spritesheet(image_file).image_at((30,  0, 10, 10), colorkey = 0),
 		"block":        ss.spritesheet(image_file).image_at((40,  0, 10, 10), colorkey = 0),
-		"test_thing":   ss.spritesheet(image_file).image_at((50,  0, 10, 10), colorkey = 0),
+		"test_entity":  ss.spritesheet(image_file).image_at((50,  0, 10, 10), colorkey = 0),
 	}
 	return SPRITESHEET
 
@@ -56,10 +56,10 @@ def run_game():
 				block[0], block[1],\
 				camerax, cameray
 			)
-		for entity in en.LIST_OF_ENTITIES:
+		for entity in el.LIST_OF_ENTITIES:
 			camera_controller(
 				DISPLAYSURF, \
-				get_sprite_from("spritesheet.png")["test_thing"], \
+				get_sprite_from("spritesheet.png")["test_entity"], \
 				entity.x, entity.y, \
 				camerax, cameray
 			)
@@ -73,7 +73,7 @@ def run_game():
 		player.run()
 		dialog_box.run()
 		clock.run()
-		print(clock.format_date_and_time())
+		# print("Test") # For debugging for now.
 
 		if dialog_box.message is not None:
 			player.can_move = False
@@ -81,7 +81,7 @@ def run_game():
 		else:
 			player.can_move = True
 			clock.can_run   = True
-			for entity in en.LIST_OF_ENTITIES:
+			for entity in el.LIST_OF_ENTITIES:
 				entity.in_conversation = False
 
 		for event in pygame.event.get(): # event handling loop
@@ -92,11 +92,10 @@ def run_game():
 					terminate()
 				if event.key == K_z:
 					dialog_target = player.attempt_dialog()
-					if dialog_target is not None: 
-						if not dialog_target.in_conversation:
-							dialog_target.start_conversation(
-								dialog_box = dialog_box,
-							)
+					if dialog_target is not None and not dialog_target.in_conversation:
+						dialog_target.start_conversation(
+							dialog_box = dialog_box,
+						)
 
 		pygame.display.update()
 		FPSCLOCK.tick(gc.FPS)
