@@ -108,7 +108,7 @@ class Player:
 
 	def return_obstruction(self, x, y):
 		"""Input a coordinate. 
-		Output the name of an obstruction as a string.
+		Output the obstruction as an instance of an class (or for block, a string).
 		If there is none, return None."""
 		for block in wm.BLOCKS:
 			if block == (x, y):

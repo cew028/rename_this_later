@@ -15,8 +15,8 @@ guy1 = en.Entity(
 		2: ["Now this is message 2.", 0],
 	},
 	message_index = 0,
+	in_conversation = False,
 	schedule = None,
-	in_conversation = False
 )
 guy2 = en.Entity(
 	name = "Guy2", 
@@ -28,8 +28,8 @@ guy2 = en.Entity(
 		2: ["We skipped to message 2. You'll go to 1 next.", 1],
 	},
 	message_index = 0,
+	in_conversation = False,
 	schedule = None,
-	in_conversation = False
 )
 guy3 = en.Entity(
 	name = "Guy3", 
@@ -41,8 +41,8 @@ guy3 = en.Entity(
 		2: ["You said no.", 0],
 	},
 	message_index = 0,
+	in_conversation = False,
 	schedule = None,
-	in_conversation = False
 )
 guy4 = en.Entity(
 	name = "Guy4", 
@@ -53,13 +53,8 @@ guy4 = en.Entity(
 		1: ["This one's short.", 0],
 	},
 	message_index = 0,
+	in_conversation = False,
 	schedule = None,
-	in_conversation = False
 )
 
-LIST_OF_ENTITIES = [
-	guy1,
-	guy2,
-	guy3,
-	guy4
-]
+LIST_OF_ENTITIES = [guy1, guy2, guy3, guy4]

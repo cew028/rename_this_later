@@ -45,6 +45,9 @@ def run_game():
 		DISPLAYSURF = DISPLAYSURF,
 	)
 	clock = cm.Clock()
+	question_box = tm.QuestionBox(
+		DISPLAYSURF = DISPLAYSURF,
+	)
 
 	while True:
 		camerax, cameray = player.x, player.y 
@@ -73,9 +76,11 @@ def run_game():
 		player.run()
 		dialog_box.run()
 		clock.run()
+		question_box.run()
+		# print(clock.format_date_and_time())
 		# print(en.guy3.list_of_choices()) # For debugging for now.
 
-		if dialog_box.message is not None:
+		if dialog_box.message is not None or question_box.list_of_choices != []:
 			player.can_move = False
 			clock.can_run   = False
 		else:
@@ -99,7 +104,17 @@ def run_game():
 					if dialog_box.ready_for_input:
 						dialog_box.continue_inputted = True
 						if len(dialog_box.list_of_lines) < dialog_box.height//gc.GRIDSIZE-1:
-							dialog_target.generate_next_message(dialog_box)
+							dialog_target.generate_next_message(question_box)
+				if event.key == gc.LEFT:
+					if question_box.list_of_choices != []:
+						question_box.selected_choice -= 1
+						question_box.selected_choice = question_box.selected_choice % len(question_box.list_of_choices)
+						question_box.list_of_lines = []
+				if event.key == gc.RIGHT:
+					if question_box.list_of_choices != []:
+						question_box.selected_choice += 1
+						question_box.selected_choice = question_box.selected_choice % len(question_box.list_of_choices)
+						question_box.list_of_lines = []
 
 		pygame.display.update()
 		FPSCLOCK.tick(gc.FPS)

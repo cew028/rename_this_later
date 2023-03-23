@@ -9,16 +9,16 @@ class Entity:
 		y,
 		dict_of_messages,
 		message_index,
-		schedule,
 		in_conversation,
+		schedule,
 	):
 		self.name             = name
 		self.x                = x
 		self.y                = y
 		self.dict_of_messages = dict_of_messages
 		self.message_index    = message_index
-		self.schedule         = schedule
 		self.in_conversation  = in_conversation
+		self.schedule         = schedule
 
 	# Syntactic sugars:
 	def change_message_index_to(self, choice):
@@ -41,11 +41,11 @@ class Entity:
 	def number_of_choices(self):
 		return (len(self.dict_of_messages[self.message_index]) - 1) // 2 
 
-	def generate_next_message(self, dialog_box):
+	def generate_next_message(self, question_box):
 		if self.is_question(): # The current message was not a question to the player.
 			self.next_message()
 		else: # It was a question; let's build the multiple choice.
-			print(self.list_of_choices())
+			question_box.list_of_choices = self.list_of_choices()
 
 
 	def start_conversation(self, dialog_box):

@@ -187,6 +187,20 @@ class DialogBox:
 		if self.block_done:
 			self.waiting_for_input()
 
+	def flash(self, input_message, x, y):
+		# This value is the number of times per second the "▼" flashes.
+		flash_freq_sec = 2
+		# This converts flash_freq_sec to a number of frames.
+		flash_freq_frames   = gc.FPS // flash_freq_sec 
+		# Tick up the counter.
+		self.flash_counter += 1 
+		# Roll over the counter if you reach flash_freq_frames.
+		self.flash_counter  = self.flash_counter % flash_freq_frames 
+		if self.flash_counter < flash_freq_frames // 2: # Alternate on/off.
+			self.write_message(
+				input_message=input_message, x=x, y=y
+			)
+
 	def run(self):
 		keys = pygame.key.get_pressed()
 		if self.message is not None:
@@ -211,23 +225,7 @@ class DialogBox:
 
 	def waiting_for_input(self):
 		self.ready_for_input = True
-
-		# This value is the number of times per second the "▼" flashes.
-		flash_freq_sec = 2
-
-		# This converts flash_freq_sec to a number of frames.
-		flash_freq_frames   = gc.FPS // flash_freq_sec 
-
-		# Tick up the counter.
-		self.flash_counter += 1 
-
-		# Roll over the counter if you reach flash_freq_frames.
-		self.flash_counter  = self.flash_counter % flash_freq_frames 
-
-		if self.flash_counter < flash_freq_frames // 2: # Alternate on/off.
-			self.write_message(
-				input_message="▼", x=self.topleftx+self.width-gc.GRIDSIZE*2, y=self.toplefty+self.height-gc.GRIDSIZE
-			)
+		self.flash("▼", self.topleftx+self.width-gc.GRIDSIZE*2, self.toplefty+self.height-gc.GRIDSIZE)
 		if self.continue_inputted:
 			for _ in range(self.height//gc.GRIDSIZE-1):
 				if self.list_of_lines != []:
@@ -251,3 +249,172 @@ class DialogBox:
 			letter_count += 1
 
 
+class QuestionBox:
+	def __init__(
+		self,
+		DISPLAYSURF,
+	):
+		self.list_of_choices = []
+		self.CHARACTERS 	 = get_font_from("font.png")
+		self.DISPLAYSURF 	 = DISPLAYSURF
+		self.topleftx 		 = 0
+		self.toplefty 		 = gc.WINHEIGHT - 6*gc.GRIDSIZE
+		self.width 			 = gc.WINWIDTH
+		self.height 		 = 5*gc.GRIDSIZE
+		self.selected_choice = 0
+		self.list_of_lines   = []
+		self.is_too_short    = False
+		self.flash_counter   = 0
+
+	def break_choice_to_fit_box(self):
+		"""Takes self.list_of_choices[self.selected_choice], splits it 
+		into substrings, and places those substrings in self.list_of_lines,
+		where the substrings are short enough to fit in the dialog box."""
+		list_of_words = self.list_of_choices[self.selected_choice].split()
+		for i, word in enumerate(list_of_words):
+			list_of_words[i] = word + " "
+		current_line = ""
+		while list_of_words != []:
+			if len(current_line) + len(list_of_words[0]) <= self.width/gc.GRIDSIZE - 2:
+				current_line += list_of_words[0]
+				del list_of_words[0]
+			else:
+				self.list_of_lines.append(current_line)
+				current_line = ""
+		self.list_of_lines.append(current_line)
+
+	def check_if_box_is_too_short(self):
+		if len(self.list_of_lines) >= self.height//gc.GRIDSIZE:
+			self.is_too_short = True
+
+	def draw_dialog_frame(self):
+		# Draw the background of the box.
+		pygame.draw.rect(
+			self.DISPLAYSURF, gc.WHITE, \
+			(self.topleftx, self.toplefty, self.width, self.height+gc.GRIDSIZE)
+		)
+
+		# Draw the four corners of the frame.
+		self.write_message(
+			input_message="╔", x=self.topleftx, y=self.toplefty
+		)
+		self.write_message(
+			input_message="╗", x=self.topleftx+self.width-gc.GRIDSIZE, y=self.toplefty
+		)
+		self.write_message(
+			input_message="╚", x=self.topleftx, y=self.toplefty+self.height
+		)
+		self.write_message(
+			input_message="╝", x=self.topleftx+self.width-gc.GRIDSIZE, y=self.toplefty+self.height
+		)
+
+		# Draw the bottom of the frame.
+		for gridx in range(self.width//gc.GRIDSIZE-2):
+			self.write_message(
+				input_message="═", x=self.topleftx+(gridx+1)*gc.GRIDSIZE, y=self.toplefty+self.height
+			)
+
+		# Draw the speaker's name.
+		self.write_message(
+			input_message="Me", x=self.width-4*gc.GRIDSIZE, y=self.toplefty
+		)
+
+		# Draw the top of the frame.
+		self.write_message(
+			input_message="═", x=self.width-2*gc.GRIDSIZE, y=self.toplefty
+		)
+		for gridx in range(self.width//gc.GRIDSIZE-3):
+			if gridx > self.width//gc.GRIDSIZE-4-len("Me"):
+				continue # This is where the speaker has been written.
+			self.write_message(
+				input_message="═", x=self.topleftx+(gridx+1)*gc.GRIDSIZE, y=self.toplefty
+			)
+
+		# Draw the sides of the frame.
+		for gridy in range(self.height//gc.GRIDSIZE-1):
+			self.write_message(
+				input_message="║", x=self.topleftx, y=self.toplefty+(gridy+1)*gc.GRIDSIZE
+			)
+			self.write_message(
+				input_message="║", x=self.topleftx+self.width-gc.GRIDSIZE, y=self.toplefty+(gridy+1)*gc.GRIDSIZE
+			)
+
+	def draw_dialog_text(self):
+		# First we generate the list_of_lines.
+		if self.list_of_lines == []:
+			self.break_choice_to_fit_box() 
+
+		self.check_if_box_is_too_short()
+
+		self.flash(
+			input_message="◄", 
+			x=self.topleftx+gc.GRIDSIZE, 
+			y=self.toplefty+gc.GRIDSIZE
+		)
+		self.write_message(
+			input_message="(", 
+			x=self.topleftx+gc.GRIDSIZE*2, 
+			y=self.toplefty+gc.GRIDSIZE
+		)
+		self.write_message(
+			input_message=str(self.selected_choice+1), 
+			x=self.topleftx+gc.GRIDSIZE*3, 
+			y=self.toplefty+gc.GRIDSIZE
+		)
+		self.write_message(
+			input_message="/", 
+			x=self.topleftx+(3+len(str(self.selected_choice+1)))*gc.GRIDSIZE, 
+			y=self.toplefty+gc.GRIDSIZE
+		)
+		self.write_message(
+			input_message=str(len(self.list_of_choices)),
+			x=self.topleftx+(4+len(str(self.selected_choice+1)))*gc.GRIDSIZE,
+			y=self.toplefty+gc.GRIDSIZE
+		)
+		self.write_message(
+			input_message=")",
+			x=self.topleftx+(4+len(str(self.selected_choice+1))+len(str(len(self.list_of_choices))))*gc.GRIDSIZE,
+			y=self.toplefty+gc.GRIDSIZE
+		)
+		self.flash(
+			input_message="►", 
+			x=self.topleftx+(5+len(str(self.selected_choice+1))+len(str(len(self.list_of_choices))))*gc.GRIDSIZE,
+			y=self.toplefty+gc.GRIDSIZE
+		)
+		
+
+		for num, line in enumerate(self.list_of_lines):
+			self.write_message(
+				input_message=line, x=self.topleftx+gc.GRIDSIZE*2, y=self.toplefty+gc.GRIDSIZE*(num+2)
+			)
+	#	if self.block_done:
+	#		self.waiting_for_input()	
+
+	def flash(self, input_message, x, y):
+		# This value is the number of times per second the "▼" flashes.
+		flash_freq_sec = 2
+		# This converts flash_freq_sec to a number of frames.
+		flash_freq_frames   = gc.FPS // flash_freq_sec 
+		# Tick up the counter.
+		self.flash_counter += 1 
+		# Roll over the counter if you reach flash_freq_frames.
+		self.flash_counter  = self.flash_counter % flash_freq_frames 
+		if self.flash_counter < flash_freq_frames // 2: # Alternate on/off.
+			self.write_message(
+				input_message=input_message, x=x, y=y
+			)
+
+	def run(self):
+		if self.list_of_choices != []:
+			self.draw_dialog_frame()
+			self.draw_dialog_text()
+
+
+	def write_message(self, input_message, x, y):
+		"""Input a message and a coordinate (x,y).
+		Outputs the message drawn starting at the specified coordinate."""
+		list_of_letters = [letter for letter in input_message]
+		letter_count = 0
+		for letter in list_of_letters:
+			self.DISPLAYSURF.blit(self.CHARACTERS[letter], (x + letter_count*CHARACTER_WIDTH, y))
+			letter_count += 1
