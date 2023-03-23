@@ -404,10 +404,20 @@ class QuestionBox:
 				input_message=input_message, x=x, y=y
 			)
 
+	def make_selection(self, dialog_target):
+		dict_ind = dialog_target.convert_choice_back_to_index(self.selected_choice) # syntactic sugar
+		dialog_target.message_index = dialog_target.dict_of_messages[dialog_target.message_index][dict_ind]
+		self.list_of_choices = []
+		self.selected_choice = 0
+		self.list_of_lines   = []
+		self.is_too_short    = False
+		self.flash_counter   = 0
+
 	def run(self):
 		if self.list_of_choices != []:
 			self.draw_dialog_frame()
 			self.draw_dialog_text()
+
 
 
 	def write_message(self, input_message, x, y):

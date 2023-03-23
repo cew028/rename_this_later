@@ -21,8 +21,10 @@ class Entity:
 		self.schedule         = schedule
 
 	# Syntactic sugars:
-	def change_message_index_to(self, choice):
-		self.message_index = choice
+	def change_message_index_to(self, index):
+		self.message_index = index
+	def convert_choice_back_to_index(self, choice):
+		return 2*(choice+1)
 	def is_question(self):
 		return isinstance(self.dict_of_messages[self.message_index][1], int)
 	def list_of_choices(self):
