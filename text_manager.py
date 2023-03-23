@@ -265,6 +265,7 @@ class QuestionBox:
 		self.list_of_lines   = []
 		self.is_too_short    = False
 		self.flash_counter   = 0
+		self.scroll_index    = 0
 
 	def break_choice_to_fit_box(self):
 		"""Takes self.list_of_choices[self.selected_choice], splits it 
@@ -284,8 +285,10 @@ class QuestionBox:
 		self.list_of_lines.append(current_line)
 
 	def check_if_box_is_too_short(self):
-		if len(self.list_of_lines) >= self.height//gc.GRIDSIZE:
+		if len(self.list_of_lines) >= self.height//gc.GRIDSIZE-1:
 			self.is_too_short = True
+		else:
+			self.is_too_short = False
 
 	def draw_dialog_frame(self):
 		# Draw the background of the box.
@@ -346,6 +349,59 @@ class QuestionBox:
 
 		self.check_if_box_is_too_short()
 
+		self.option_header()
+
+		if not self.is_too_short:
+			for num, line in enumerate(self.list_of_lines):
+				self.write_message(
+					input_message=line, x=self.topleftx+gc.GRIDSIZE*2, y=self.toplefty+gc.GRIDSIZE*(num+2)
+				)
+		else:
+			for num in range(len(self.list_of_lines)):
+				if num < self.height//gc.GRIDSIZE-2:
+					self.write_message(
+						input_message=self.list_of_lines[num+self.scroll_index], 
+						x=self.topleftx+gc.GRIDSIZE*2, 
+						y=self.toplefty+gc.GRIDSIZE*(num+2)
+					)
+			if self.scroll_index > 0:
+				self.flash(
+					input_message="▲", 
+					x=self.topleftx+gc.GRIDSIZE, 
+					y=self.toplefty+2*gc.GRIDSIZE
+				)
+			if self.scroll_index < len(self.list_of_lines)-(self.height//gc.GRIDSIZE-2):
+				self.flash(
+					input_message="▼", 
+					x=self.topleftx+gc.GRIDSIZE, 
+					y=self.toplefty+self.height-gc.GRIDSIZE
+				)
+	def flash(self, input_message, x, y):
+		# This value is the number of times per second the "▼" flashes.
+		flash_freq_sec = 2 
+		# This converts flash_freq_sec to a number of frames.
+		flash_freq_frames   = gc.FPS // flash_freq_sec 
+		# Tick up the counter.
+		self.flash_counter += 1 
+		# Roll over the counter if you reach flash_freq_frames.
+		self.flash_counter  = self.flash_counter % flash_freq_frames 
+		if self.flash_counter < flash_freq_frames // 2: # Alternate on/off.
+			self.write_message(
+				input_message=input_message, x=x, y=y
+			)
+
+	def make_selection(self, dialog_target):
+		dict_ind = dialog_target.convert_choice_back_to_index(self.selected_choice) # syntactic sugar
+		dialog_target.message_index = dialog_target.dict_of_messages[dialog_target.message_index][dict_ind]
+		self.list_of_choices = []
+		self.selected_choice = 0
+		self.list_of_lines   = []
+		self.is_too_short    = False
+		self.flash_counter   = 0
+		self.scroll_index    = 0
+
+	def option_header(self):
+		"""Draws ◄(x/n)►."""
 		self.flash(
 			input_message="◄", 
 			x=self.topleftx+gc.GRIDSIZE, 
@@ -381,44 +437,11 @@ class QuestionBox:
 			x=self.topleftx+(5+len(str(self.selected_choice+1))+len(str(len(self.list_of_choices))))*gc.GRIDSIZE,
 			y=self.toplefty+gc.GRIDSIZE
 		)
-		
-
-		for num, line in enumerate(self.list_of_lines):
-			self.write_message(
-				input_message=line, x=self.topleftx+gc.GRIDSIZE*2, y=self.toplefty+gc.GRIDSIZE*(num+2)
-			)
-	#	if self.block_done:
-	#		self.waiting_for_input()	
-
-	def flash(self, input_message, x, y):
-		# This value is the number of times per second the "▼" flashes.
-		flash_freq_sec = 2
-		# This converts flash_freq_sec to a number of frames.
-		flash_freq_frames   = gc.FPS // flash_freq_sec 
-		# Tick up the counter.
-		self.flash_counter += 1 
-		# Roll over the counter if you reach flash_freq_frames.
-		self.flash_counter  = self.flash_counter % flash_freq_frames 
-		if self.flash_counter < flash_freq_frames // 2: # Alternate on/off.
-			self.write_message(
-				input_message=input_message, x=x, y=y
-			)
-
-	def make_selection(self, dialog_target):
-		dict_ind = dialog_target.convert_choice_back_to_index(self.selected_choice) # syntactic sugar
-		dialog_target.message_index = dialog_target.dict_of_messages[dialog_target.message_index][dict_ind]
-		self.list_of_choices = []
-		self.selected_choice = 0
-		self.list_of_lines   = []
-		self.is_too_short    = False
-		self.flash_counter   = 0
 
 	def run(self):
 		if self.list_of_choices != []:
 			self.draw_dialog_frame()
 			self.draw_dialog_text()
-
-
 
 	def write_message(self, input_message, x, y):
 		"""Input a message and a coordinate (x,y).
@@ -428,3 +451,5 @@ class QuestionBox:
 		for letter in list_of_letters:
 			self.DISPLAYSURF.blit(self.CHARACTERS[letter], (x + letter_count*CHARACTER_WIDTH, y))
 			letter_count += 1
+
+	

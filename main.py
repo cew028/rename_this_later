@@ -117,6 +117,13 @@ def run_game():
 						question_box.selected_choice += 1
 						question_box.selected_choice = question_box.selected_choice % len(question_box.list_of_choices)
 						question_box.list_of_lines = []
+				if event.key == gc.UP:
+					if question_box.is_too_short and question_box.scroll_index > 0:
+						question_box.scroll_index -= 1
+				if event.key == gc.DOWN:
+					if question_box.is_too_short and question_box.scroll_index < len(question_box.list_of_lines)-(question_box.height//gc.GRIDSIZE-2):
+						question_box.scroll_index += 1
+
 
 		pygame.display.update()
 		FPSCLOCK.tick(gc.FPS)

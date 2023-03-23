@@ -36,7 +36,8 @@ guy3 = en.Entity(
 	x = 0, 
 	y = -30,
 	dict_of_messages = {
-		0: ["Yes or No?", "Yes.", 1, "No.", 2],
+		0: ["Yes or No?", "1Yes. 2Yes. 3Yes. 4Yes. 5Yes. 6Yes. 7Yes. 8Yes. 9Yes. 10Yes. 11Yes. 12Yes. 13Yes. 14Yes. 15Yes. 16Yes. 17Yes. 18Yes. 19Yes. 20Yes.\
+			1Yes. 2Yes. 3Yes. 4Yes. 5Yes. 6Yes. 7Yes. 8Yes. 9Yes. 10Yes. 11Yes. 12Yes. 13Yes. 14Yes. 15Yes. 16Yes. 17Yes. 18Yes. 19Yes. 20Yes.", 1, "No.", 2],
 		1: ["You said yes.", 0],
 		2: ["You said no.", 0],
 	},
