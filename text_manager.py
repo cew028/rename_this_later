@@ -381,8 +381,6 @@ class QuestionBox:
 		flash_freq_sec = 2 
 		# This converts flash_freq_sec to a number of frames.
 		flash_freq_frames   = gc.FPS // flash_freq_sec 
-		# Tick up the counter.
-		self.flash_counter += 1 
 		# Roll over the counter if you reach flash_freq_frames.
 		self.flash_counter  = self.flash_counter % flash_freq_frames 
 		if self.flash_counter < flash_freq_frames // 2: # Alternate on/off.
@@ -443,6 +441,10 @@ class QuestionBox:
 		if self.list_of_choices != []:
 			self.draw_dialog_frame()
 			self.draw_dialog_text()
+		# Tick up the flash counter. (We put it here because 
+		# otherwise multiple opbjects on screen flashing will 
+		# cause them to flash faster.)
+		self.flash_counter += 1 
 
 	def write_message(self, input_message, x, y):
 		"""Input a message and a coordinate (x,y).
