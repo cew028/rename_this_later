@@ -390,9 +390,10 @@ class QuestionBox:
 				input_message=input_message, x=x, y=y
 			)
 
-	def make_selection(self, dialog_target):
+	def make_selection(self, dialog_target, dialog_box):
 		dict_ind = dialog_target.convert_choice_back_to_index(self.selected_choice) # syntactic sugar
 		dialog_target.message_index = dialog_target.dict_of_messages[dialog_target.message_index][dict_ind]
+		dialog_target.start_conversation(dialog_box)
 		self.list_of_choices = []
 		self.selected_choice = 0
 		self.list_of_lines   = []

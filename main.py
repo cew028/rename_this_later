@@ -98,7 +98,7 @@ def run_game():
 				if event.key == gc.A:
 					dialog_target = player.attempt_dialog()
 					if question_box.list_of_choices != []:
-						question_box.make_selection(dialog_target)
+						question_box.make_selection(dialog_target, dialog_box)
 					if dialog_target is not None and not dialog_target.in_conversation:
 						dialog_target.start_conversation(
 							dialog_box = dialog_box,
