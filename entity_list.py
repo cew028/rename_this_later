@@ -44,9 +44,22 @@ guy3 = en.Entity(
 	schedule = None,
 	in_conversation = False
 )
+guy4 = en.Entity(
+	name = "Guy4", 
+	x = 30, 
+	y = -30,
+	dict_of_messages = {
+		0: ["Here's a really long message. We want to continue to confirm that wrapping the message across multiple boxes works. This message is quite long. Let's wrap it up. Here is the final sentence of the message.", 1],
+		1: ["This one's short.", 0],
+	},
+	message_index = 0,
+	schedule = None,
+	in_conversation = False
+)
 
 LIST_OF_ENTITIES = [
 	guy1,
 	guy2,
 	guy3,
+	guy4
 ]

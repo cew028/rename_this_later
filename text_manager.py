@@ -193,8 +193,6 @@ class DialogBox:
 			self.draw_dialog_box()
 		else:
 			self.turn_off()
-		if keys[gc.A] and self.ready_for_input:
-			self.continue_inputted = True
 		if keys[gc.B]:
 			self.turn_off()
 

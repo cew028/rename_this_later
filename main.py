@@ -73,7 +73,7 @@ def run_game():
 		player.run()
 		dialog_box.run()
 		clock.run()
-		# print("Test") # For debugging for now.
+		# print(en.guy3.list_of_choices()) # For debugging for now.
 
 		if dialog_box.message is not None:
 			player.can_move = False
@@ -90,12 +90,16 @@ def run_game():
 			elif event.type == KEYDOWN:
 				if event.key == K_ESCAPE:
 					terminate()
-				if event.key == K_z:
+				if event.key == gc.A:
 					dialog_target = player.attempt_dialog()
 					if dialog_target is not None and not dialog_target.in_conversation:
 						dialog_target.start_conversation(
 							dialog_box = dialog_box,
 						)
+					if dialog_box.ready_for_input:
+						dialog_box.continue_inputted = True
+						if len(dialog_box.list_of_lines) < dialog_box.height//gc.GRIDSIZE-1:
+							dialog_target.generate_next_message(dialog_box)
 
 		pygame.display.update()
 		FPSCLOCK.tick(gc.FPS)

@@ -1,7 +1,3 @@
-import pygame
-
-from pygame.locals import *
-
 import global_constants as gc
 
 
@@ -57,4 +53,3 @@ class Entity:
 
 		dialog_box.speaker = self.name
 		dialog_box.message = self.message()
-		self.generate_next_message(dialog_box)
