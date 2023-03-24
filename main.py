@@ -105,7 +105,7 @@ def run_game():
 						)
 					if dialog_box.ready_for_input:
 						dialog_box.continue_inputted = True
-						if len(dialog_box.list_of_lines) < dialog_box.height//gc.GRIDSIZE-1:
+						if len(dialog_box.list_of_lines) <= dialog_box.height//gc.GRIDSIZE-1:
 							dialog_target.generate_next_message(question_box)
 				if event.key == gc.LEFT:
 					if question_box.list_of_choices != []:
