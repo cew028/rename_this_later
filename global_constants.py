@@ -18,3 +18,8 @@ UP = K_UP
 DOWN = K_DOWN
 LEFT = K_LEFT
 RIGHT = K_RIGHT
+
+FLAGS = {
+	# flag: True/False,
+	"test_flag": False,
+}

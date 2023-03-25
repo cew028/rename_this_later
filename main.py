@@ -88,6 +88,7 @@ def run_game():
 			clock.can_run   = True
 			for entity in el.LIST_OF_ENTITIES:
 				entity.in_conversation = False
+				entity.update_from_flags()
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
