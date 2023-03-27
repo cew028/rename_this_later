@@ -137,5 +137,21 @@ guy7 = en.Entity(
 	in_conversation = False,
 	schedule = None,
 )
+guy8 = en.Entity(
+	name = "Guy8", 
+	x = 70, 
+	y = 70,
+	dict_of_messages = {
+		0: dom("It's currently the first half of the hour.", 0),
+	},
+	dict_key = 0,
+	flag_dict = {
+		"test_clock_flag": fd(
+							0, dom("Now it's currently the second half of the hour.", 0),
+							),
+	},
+	in_conversation = False,
+	schedule = None,
+)
 
-LIST_OF_ENTITIES = [guy1, guy2, guy3, guy4, guy5, guy6, guy7,]
+LIST_OF_ENTITIES = [guy1, guy2, guy3, guy4, guy5, guy6, guy7, guy8,]
