@@ -1,4 +1,4 @@
-import global_constants as gc
+import flag_manager as fm
 
 
 class Entity:
@@ -21,6 +21,7 @@ class Entity:
 		self.flag_dict        = flag_dict
 		self.in_conversation  = in_conversation
 		self.schedule         = schedule
+		self.original_dict    = dict_of_messages.copy()
 
 	# Syntactic sugars:
 	def change_dict_key_to(self, key):
@@ -60,12 +61,14 @@ class Entity:
 
 		if self.dict_of_messages[self.dict_key][1] is not None: # If this message had a flag
 			flag = self.dict_of_messages[self.dict_key][1]
-			gc.FLAGS[flag] = True
+			fm.FLAGS[flag] = True
 
 	def update_from_flags(self):
-		for flag in gc.FLAGS:
-			if gc.FLAGS[flag] is True and flag in self.flag_dict:
+		for flag in fm.FLAGS:
+			if fm.FLAGS[flag] is True and flag in self.flag_dict:
 				for pair in self.flag_dict[flag]:
 					key = pair[0]
 					new_fmrt = pair[1]
 					self.dict_of_messages[key] = new_fmrt
+			elif fm.FLAGS[flag] is False and flag in self.flag_dict:
+				self.dict_of_messages = self.original_dict.copy()

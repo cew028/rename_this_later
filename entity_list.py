@@ -13,9 +13,9 @@ def dom(*args, flag = None,):
 
 # flag_dict is formatted as follows:
 #	{
-#		flag: [[key1, dom1], [key2, dom2], ... ], 
+#		flag: [[key1, dom1], [key2, dom2], ... ],
 #	}
-# It's a list of tuples where you intend toreplace the keyn with domn when the flag is made true.
+# It's a list of tuples where you intend to replace the keyn with domn when the flag is made true.
 # Again, let's auto-format that.
 
 def fd(*args):
@@ -138,4 +138,4 @@ guy7 = en.Entity(
 	schedule = None,
 )
 
-LIST_OF_ENTITIES = [guy1, guy2, guy3, guy4, guy5, guy6, guy7]
+LIST_OF_ENTITIES = [guy1, guy2, guy3, guy4, guy5, guy6, guy7,]

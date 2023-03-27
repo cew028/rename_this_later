@@ -4,6 +4,7 @@ from pygame.locals import *
 
 import clock_manager as cm
 import entity_list as el
+import flag_manager as fm
 import global_constants as gc
 import player_manager as pm
 import spritesheet as ss
@@ -48,6 +49,9 @@ def run_game():
 	question_box = tm.QuestionBox(
 		DISPLAYSURF = DISPLAYSURF,
 	)
+	flagger = fm.Flagger(
+		clock = clock,
+	)
 
 	while True:
 		camerax, cameray = player.x, player.y 
@@ -77,6 +81,7 @@ def run_game():
 		dialog_box.run()
 		clock.run()
 		question_box.run()
+		flagger.run()
 		# print(clock.format_date_and_time())
 		# print(en.guy3.list_of_choices()) # For debugging for now.
 
@@ -88,7 +93,6 @@ def run_game():
 			clock.can_run   = True
 			for entity in el.LIST_OF_ENTITIES:
 				entity.in_conversation = False
-				entity.update_from_flags()
 
 		for event in pygame.event.get(): # event handling loop
 			if event.type == QUIT:
@@ -124,6 +128,9 @@ def run_game():
 				if event.key == gc.DOWN:
 					if question_box.is_too_short and question_box.scroll_index < len(question_box.list_of_lines)-(question_box.height//gc.GRIDSIZE-2):
 						question_box.scroll_index += 1
+				if event.key == K_f: # testing -- this sets test_flag to False
+					fm.FLAGS["test_flag"] = False
+
 
 
 		pygame.display.update()

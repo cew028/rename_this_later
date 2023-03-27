@@ -255,10 +255,10 @@ class QuestionBox:
 		DISPLAYSURF,
 	):
 		self.list_of_choices = []
-		self.CHARACTERS 	 = get_font_from("font.png")
+		self.CHARACTERS  	 = get_font_from("font.png")
 		self.DISPLAYSURF 	 = DISPLAYSURF
 		self.topleftx 		 = 0
-		self.toplefty 		 = gc.WINHEIGHT - 6*gc.GRIDSIZE
+		self.toplefty 	 	 = gc.WINHEIGHT - 6*gc.GRIDSIZE
 		self.width 			 = gc.WINWIDTH
 		self.height 		 = 5*gc.GRIDSIZE
 		self.selected_choice = 0
