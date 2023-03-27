@@ -51,6 +51,7 @@ def run_game():
 	)
 	flagger = fm.Flagger(
 		clock = clock,
+		player = player,
 	)
 
 	while True:
@@ -83,7 +84,7 @@ def run_game():
 		question_box.run()
 		flagger.run()
 		# print(clock.format_date_and_time())
-		# print(en.guy3.list_of_choices()) # For debugging for now.
+		# print(fm.FLAGS["test_loc_flag"]) # For debugging for now.
 
 		if dialog_box.message is not None or question_box.list_of_choices != []:
 			player.can_move = False
