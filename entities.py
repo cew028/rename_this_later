@@ -66,12 +66,29 @@ class Entity:
 	def update_from_flags(self):
 		for flag in fm.FLAGS:
 			if fm.FLAGS[flag] is True and flag in self.flag_dict:
-				for pair in self.flag_dict[flag]:
-					key = pair[0]
-					new_fmrt = pair[1]
-					self.dict_of_messages[key] = new_fmrt
+				if self.flag_dict[flag][1] == True: # replace_old is True (i.e., the flag overwrites the old message)
+					for pair in self.flag_dict[flag][0]:
+						key = pair[0]
+						new_dom = pair[1]
+						self.dict_of_messages[key] = new_dom
+				else: # replace_old is False, so we just add to the current message
+					for pair in self.flag_dict[flag][0]:
+						key = pair[0]
+						new_dom = pair[1]
+						for arg in new_dom[0]:
+							if arg not in self.dict_of_messages[key][0]:
+								self.dict_of_messages[key][0].append(arg)
+							
 			elif fm.FLAGS[flag] is False and flag in self.flag_dict:
 				# Reset only the parts of self.dict_of_messages that were changed by the flag.
-				list_of_keys_to_revert = [pair[0] for pair in self.flag_dict[flag]]
-				for key in list_of_keys_to_revert:
-					self.dict_of_messages[key] = self.original_dict[key]
+				if self.flag_dict[flag][1] == True: # replace_old is True (i.e., the flag overwrote the old message)
+					list_of_keys_to_revert = [pair[0] for pair in self.flag_dict[flag][0]]
+					for key in list_of_keys_to_revert:
+						self.dict_of_messages[key] = self.original_dict[key]
+				else: # replace_old is False, so we need to remove the things that were added
+					for pair in self.flag_dict[flag][0]:
+						key = pair[0]
+						new_dom = pair[1]
+						for arg in new_dom[0]:
+							if arg in self.dict_of_messages[key][0]:
+								self.dict_of_messages[key][0].remove(arg)

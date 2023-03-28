@@ -9,19 +9,21 @@ import entities as en
 def dom(*args, flag = None,):
 	"""Takes the inputs and formats it as per the comment block above.
 	It's called 'dom' for 'dict_of_messages'."""
-	return [[arg for arg in args],flag]
+	return [[arg for arg in args], flag]
 
 # flag_dict is formatted as follows:
 #	{
-#		flag: [[key1, dom1], [key2, dom2], ... ],
+#		flag: [[[key1, dom1], [key2, dom2], ... ], replace_old]
 #	}
 # It's a list of tuples where you intend to replace the keyn with domn when the flag is made true.
-# Again, let's auto-format that.
+# Then its a outer list, where the first entry is that aforementioned list of tuples, and the second
+# entry is a boolean, default True, that indicates whether to overwrite the entire key, or just add to
+# what's currently in dict_of_messages. Again, let's auto-format that.
 
-def fd(*args):
+def fd(*args, replace_old = True):
 	"""Takes the inputs and formats it as per the comment block above.
 	It's called 'fd' for 'flag_dict'."""
-	return [[args[i], args[i+1]] for i in range(0, len(args), 2)]
+	return [[[args[i], args[i+1]] for i in range(0, len(args), 2)], replace_old]
 
 
 guy1 = en.Entity(
@@ -154,7 +156,7 @@ guy8 = en.Entity(
 	schedule = None,
 )
 guy9 = en.Entity(
-	name = "Guy8", 
+	name = "Guy9", 
 	x = -70, 
 	y = -70,
 	dict_of_messages = {
@@ -169,5 +171,34 @@ guy9 = en.Entity(
 	in_conversation = False,
 	schedule = None,
 )
+guy10 = en.Entity(
+	name = "Guy10", 
+	x = -60, 
+	y = -80,
+	dict_of_messages = {
+		0: dom("Multiple choice:", "No flags activated.", 1),
+		1: dom("You selected no flag.", 0),
+		2: dom("You selected location flag.", 0),
+		3: dom("You selected dialog flag.", 0),
+		4: dom("You selected clock flag.", 0),
+	},
+	dict_key = 0,
+	flag_dict = {
+		"test_loc_flag": fd(
+							0, dom("Location flag activated.", 2),
+							replace_old = False
+							),
+		"test_dialog_flag": fd(
+							0, dom("Dialog flag activated.", 3),
+							replace_old = False
+							),
+		"test_clock_flag": fd(
+							0, dom("Clock flag activated.", 4),
+							replace_old = False
+							),
+	},
+	in_conversation = False,
+	schedule = None,
+)
 
-LIST_OF_ENTITIES = [guy1, guy2, guy3, guy4, guy5, guy6, guy7, guy8, guy9,]
+LIST_OF_ENTITIES = [guy1, guy2, guy3, guy4, guy5, guy6, guy7, guy8, guy9, guy10]
