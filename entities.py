@@ -71,4 +71,7 @@ class Entity:
 					new_fmrt = pair[1]
 					self.dict_of_messages[key] = new_fmrt
 			elif fm.FLAGS[flag] is False and flag in self.flag_dict:
-				self.dict_of_messages = self.original_dict.copy()
+				# Reset only the parts of self.dict_of_messages that were changed by the flag.
+				list_of_keys_to_revert = [pair[0] for pair in self.flag_dict[flag]]
+				for key in list_of_keys_to_revert:
+					self.dict_of_messages[key] = self.original_dict[key]

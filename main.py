@@ -129,8 +129,9 @@ def run_game():
 				if event.key == gc.DOWN:
 					if question_box.is_too_short and question_box.scroll_index < len(question_box.list_of_lines)-(question_box.height//gc.GRIDSIZE-2):
 						question_box.scroll_index += 1
-				if event.key == K_f: # testing -- this sets test_flag to False
-					fm.FLAGS["test_flag"] = False
+				if event.key == K_f: # testing -- this sets all flags to False
+					for key in fm.FLAGS:
+						fm.FLAGS[key] = False
 
 
 

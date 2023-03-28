@@ -2,7 +2,7 @@ import entity_list as el
 
 FLAGS = {
 	# flag: True/False,
-	"test_flag": False,
+	"test_dialog_flag": False,
 	"test_clock_flag": False,
 	"test_loc_flag": False,
 }

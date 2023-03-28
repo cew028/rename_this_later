@@ -101,7 +101,7 @@ guy5 = en.Entity(
 	},
 	dict_key = 0,
 	flag_dict = {
-		"test_flag": fd(0, dom("Now you have talked to my neighbor!",0)),
+		"test_dialog_flag": fd(0, dom("Now you have talked to my neighbor!",0)),
 	},
 	in_conversation = False,
 	schedule = None,
@@ -111,7 +111,7 @@ guy6 = en.Entity(
 	x = 60, 
 	y = 50,
 	dict_of_messages = {
-		0: dom("This triggered the flag.", 0, flag="test_flag"),
+		0: dom("This triggered the flag.", 0, flag="test_dialog_flag"),
 	},
 	dict_key = 0,
 	flag_dict = {},
@@ -129,7 +129,7 @@ guy7 = en.Entity(
 	},
 	dict_key = 0,
 	flag_dict = {
-		"test_flag": fd(
+		"test_dialog_flag": fd(
 						1, dom("Good!",0), 
 						2, dom("My neighbor said you did though. Don't lie!",0),
 						),
